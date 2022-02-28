@@ -18,6 +18,7 @@ public class FetchData {
 
     private static final String citybikesURL = "http://api.citybik.es/v2/networks/bicimad";
 
+    // Inspired by this source: https://www.youtube.com/watch?v=oGWJ8xD2W6k
     // This should pass the data to some object or call a function, it cannot return the data
     public static void getData() {
         OkHttpClient client = new OkHttpClient();
