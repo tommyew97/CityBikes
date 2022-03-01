@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:startColor="#88d3ce"
+        android:endColor="#6e45e2"
+        android:angle="90" />
+</shape>
+
+<!--Inspired by https://evangelidis.medium.com/android-how-to-set-gradient-color-as-background-7812c4cf06ec-->

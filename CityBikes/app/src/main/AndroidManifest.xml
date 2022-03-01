@@ -13,6 +13,9 @@
         android:theme="@style/Theme.CityBikes"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ListView"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

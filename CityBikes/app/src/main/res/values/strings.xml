@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">CityBikes</string>
+    <string name="getStartedButton">Get started!</string>
 </resources>
