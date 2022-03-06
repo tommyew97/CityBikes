@@ -8,5 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="backgroundColor">#4287f5</color>
-    <color name="headerbar">#6e45e2</color>
+    <color name="light_purple">#6e45e2</color>
+    <color name="light_blue">#88d3ce</color>
 </resources>
