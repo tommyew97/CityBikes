@@ -6,6 +6,9 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+/**
+ * Activity for the Home activity, where the user clicks a button to continue
+ */
 
 public class HomeActivity extends AppCompatActivity {
 

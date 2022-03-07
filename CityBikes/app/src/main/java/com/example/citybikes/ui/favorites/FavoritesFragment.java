@@ -14,6 +14,11 @@ import android.view.ViewGroup;
 
 import com.example.citybikes.R;
 
+/**
+ * CLass that creates a fragment for the 'Favorites' section. It handles the
+ * visualization and renders necessary elements
+ */
+
 public class FavoritesFragment extends Fragment {
 
     private FavoritesViewModel mViewModel;

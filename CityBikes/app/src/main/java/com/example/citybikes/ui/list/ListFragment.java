@@ -14,6 +14,10 @@ import android.view.ViewGroup;
 
 import com.example.citybikes.R;
 
+/**
+ * CLass that creates a fragment for the 'List' section. It handles the
+ * visualization and renders necessary elements
+ */
 public class ListFragment extends Fragment {
 
     private ListViewModel mViewModel;
