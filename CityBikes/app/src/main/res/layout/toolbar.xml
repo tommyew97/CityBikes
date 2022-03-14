@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+258<?xml version="1.0" encoding="utf-8"?>
 
-<!-- XML file corresponding to the bar menu a t the tope
+<!-- XML file corresponding to the bar menu at the top
  (Section where the user will be able to read on what Fragment hey are at)-->
 
 <androidx.appcompat.widget.Toolbar

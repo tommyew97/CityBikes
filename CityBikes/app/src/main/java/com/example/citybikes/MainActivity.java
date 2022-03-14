@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        slectItemNav(item);
+        selectItemNav(item);
         return true;
     }
 
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * Handles switching between different section/menu options
      * @param item
      */
-    private void slectItemNav(MenuItem item) {
+    private void selectItemNav(MenuItem item) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
