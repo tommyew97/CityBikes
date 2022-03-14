@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- XML file corresponding to the bar menu at the top
+ (Section where the user will be able to read on what Fragment hey are at)-->
+
+<androidx.appcompat.widget.Toolbar
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="?android:attr/actionBarSize"
+    android:background="@android:color/holo_purple"
+    android:fitsSystemWindows="true"
+    app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+    />
