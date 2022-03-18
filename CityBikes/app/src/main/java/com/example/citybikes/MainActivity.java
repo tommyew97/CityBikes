@@ -14,9 +14,6 @@ import android.os.Bundle;
 
 import android.view.MenuItem;
 
-import android.widget.ListView;
-
-import com.example.citybikes.ui.favorites.AppDatabase;
 import com.example.citybikes.ui.favorites.FavoritesFragment;
 import com.example.citybikes.ui.map.MapFragment;
 import com.example.citybikes.ui.list.ListFragment;
