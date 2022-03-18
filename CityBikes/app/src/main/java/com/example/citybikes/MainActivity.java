@@ -8,25 +8,20 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.room.Room;
 
-import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.util.Log;
+
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
+
 import android.widget.ListView;
 
 import com.example.citybikes.ui.favorites.AppDatabase;
 import com.example.citybikes.ui.favorites.FavoritesFragment;
-import com.example.citybikes.ui.favorites.Station;
 import com.example.citybikes.ui.map.MapFragment;
 import com.example.citybikes.ui.list.ListFragment;
 import com.google.android.material.navigation.NavigationView;
 
-import java.util.List;
 
 /**
  * Class that handles the functionality of the app on one activity. It holds the drawer menu
@@ -44,10 +39,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     NavigationView navigationView;
     Toolbar toolbar;
     ActionBarDrawerToggle toggle;
-    private AppDatabase db;
-    private ListView listView;
-
-
 
     /**
      * creates the activity and loads al the content
@@ -65,8 +56,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         toolbar = findViewById(R.id.toolbar);
-
-
 
         getSupportFragmentManager().beginTransaction().add(R.id.content, new ListFragment()).commit();
         setTitle("List");
