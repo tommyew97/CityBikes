@@ -8,5 +8,8 @@
     <string name="favorites">Favorites</string>
     <string name="Map">Map</string>
     <string name="menu">Menu</string>
+    <string name="save">Save</string>
+    <string name="name">Name</string>
+    <string name="id">id</string>
 
 </resources>
