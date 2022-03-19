@@ -11,12 +11,14 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+
 import android.view.MenuItem;
 
 import com.example.citybikes.ui.favorites.FavoritesFragment;
 import com.example.citybikes.ui.map.MapFragment;
 import com.example.citybikes.ui.list.ListFragment;
 import com.google.android.material.navigation.NavigationView;
+
 
 /**
  * Class that handles the functionality of the app on one activity. It holds the drawer menu
@@ -148,4 +150,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         return super.onOptionsItemSelected(item);
     }
+
 }

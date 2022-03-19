@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.example.citybikes.R;
 
 /**
@@ -22,6 +21,7 @@ import com.example.citybikes.R;
 public class FavoritesFragment extends Fragment {
 
     private FavoritesViewModel mViewModel;
+    private AppDatabase db;
 
     public static FavoritesFragment newInstance() {
         return new FavoritesFragment();
@@ -30,8 +30,11 @@ public class FavoritesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.favorites_fragment, container, false);
+        View view = inflater.inflate(R.layout.favorites_fragment, container, false);
+        db = AppDatabase.getInstance(getActivity().getApplicationContext());
+        return view;
     }
+
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
