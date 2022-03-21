@@ -5,6 +5,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
+import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.Bundle;
@@ -18,7 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-
+import com.example.citybikes.MainActivity;
 import com.example.citybikes.R;
 import com.example.citybikes.ui.favorites.AppDatabase;
 
@@ -48,12 +49,13 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.citybikes.util.CalculateDistance;
 
 /**
  * CLass that creates a fragment for the 'List' section. It handles the
  * visualization and renders necessary elements
  */
-public class ListFragment extends Fragment implements LocationListener {
+public class ListFragment extends Fragment {
 
     private ListViewModel mViewModel;
     private static final String citybikesURL = "http://api.citybik.es/v2/networks/bicimad";
@@ -69,6 +71,10 @@ public class ListFragment extends Fragment implements LocationListener {
     private Typeface robotoBold;
     private Typeface robotoNormal;
     private AppDatabase db;
+    private RelativeLayout.LayoutParams lp4;
+    private Double userLat;
+    private Double userLong;
+    private boolean userLocationReady = false;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -82,12 +88,6 @@ public class ListFragment extends Fragment implements LocationListener {
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         db = AppDatabase.getInstance(getActivity().getApplicationContext());
         setUp();
-        int permissionCheck = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
-
         return view;
     }
 
@@ -121,7 +121,15 @@ public class ListFragment extends Fragment implements LocationListener {
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         lp3.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         lp3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-
+        lp4 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp4.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        lp4.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        lp2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        userLong = ((MainActivity) getActivity()).getUserLong();
+        userLat = ((MainActivity) getActivity()).getUserLat();
     }
 
     public void styleText(TextView view, String text, int fontSize, Typeface font, int color) {
@@ -154,7 +162,7 @@ public class ListFragment extends Fragment implements LocationListener {
         TextView emptySlots = new TextView(getActivity());
         ImageButton favoritesButton = new ImageButton(getActivity());
         TextView distance = new TextView(getActivity());
-        Double stationLat;
+        Double stationLat = 0.0;
         Double stationLong = 0.0;
         try {
             styleText(name, array.getJSONObject(index).getString("name"), 18,
@@ -176,8 +184,14 @@ public class ListFragment extends Fragment implements LocationListener {
         box.addView(freeBikes);
         box.addView(emptySlots);
         box.addView(favoritesButton);
+        if(userLocationReady) {
+            styleText(distance, CalculateDistance.distance(userLat, userLong, stationLat, stationLong), 16, robotoNormal, Color.BLACK);
+            distance.setLayoutParams(lp4);
+            box.addView(distance);
+        }
         return box;
     }
+
 
     public void styleBox(RelativeLayout box) {
         box.setLayoutParams(boxParams);
@@ -189,6 +203,9 @@ public class ListFragment extends Fragment implements LocationListener {
     // Also disables loading spinner when done
     public void populateList() {
         requireActivity().runOnUiThread(() -> {
+            if(!userLong.equals(0.0)) {
+                userLocationReady = true;
+            }
             for(int i=0; i < array.length(); i++) {
                 stationsLinearLayout.addView(createBoxWithData(i));
             }
@@ -226,10 +243,5 @@ public class ListFragment extends Fragment implements LocationListener {
                 }
             }
         });
-    }
-
-    @Override
-    public void onLocationChanged(@NonNull Location location) {
-
     }
 }
