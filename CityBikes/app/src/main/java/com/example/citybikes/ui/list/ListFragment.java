@@ -1,13 +1,19 @@
 package com.example.citybikes.ui.list;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.Manifest;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,11 +43,17 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import androidx.appcompat.app.AppCompatActivity;
+
 /**
  * CLass that creates a fragment for the 'List' section. It handles the
  * visualization and renders necessary elements
  */
-public class ListFragment extends Fragment {
+public class ListFragment extends Fragment implements LocationListener {
 
     private ListViewModel mViewModel;
     private static final String citybikesURL = "http://api.citybik.es/v2/networks/bicimad";
@@ -70,6 +82,12 @@ public class ListFragment extends Fragment {
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         db = AppDatabase.getInstance(getActivity().getApplicationContext());
         setUp();
+        int permissionCheck = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
+
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+
         return view;
     }
 
@@ -135,6 +153,9 @@ public class ListFragment extends Fragment {
         TextView freeBikes = new TextView(getActivity());
         TextView emptySlots = new TextView(getActivity());
         ImageButton favoritesButton = new ImageButton(getActivity());
+        TextView distance = new TextView(getActivity());
+        Double stationLat;
+        Double stationLong = 0.0;
         try {
             styleText(name, array.getJSONObject(index).getString("name"), 18,
                     robotoBold, Color.BLACK);
@@ -205,5 +226,10 @@ public class ListFragment extends Fragment {
                 }
             }
         });
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+
     }
 }
