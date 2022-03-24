@@ -1,20 +1,13 @@
 package com.example.citybikes.ui.list;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.Manifest;
-import android.content.Context;
-import android.location.Location;
-import android.location.LocationListener;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,11 +37,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import androidx.appcompat.app.AppCompatActivity;
 import com.example.citybikes.util.CalculateDistance;
 
 /**
@@ -74,7 +62,9 @@ public class ListFragment extends Fragment {
     private RelativeLayout.LayoutParams lp4;
     private Double userLat;
     private Double userLong;
-    private boolean userLocationReady = false;
+    private Double stationLat;
+    private Double stationLong;
+    private boolean locationAllowed;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -128,8 +118,11 @@ public class ListFragment extends Fragment {
         lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        userLong = ((MainActivity) getActivity()).getUserLong();
-        userLat = ((MainActivity) getActivity()).getUserLat();
+        locationAllowed = ((MainActivity) getActivity()).getLocationAllowed();
+        if(locationAllowed) {
+            userLong = ((MainActivity) getActivity()).getUserLong();
+            userLat = ((MainActivity) getActivity()).getUserLat();
+        }
     }
 
     public void styleText(TextView view, String text, int fontSize, Typeface font, int color) {
@@ -162,8 +155,6 @@ public class ListFragment extends Fragment {
         TextView emptySlots = new TextView(getActivity());
         ImageButton favoritesButton = new ImageButton(getActivity());
         TextView distance = new TextView(getActivity());
-        Double stationLat = 0.0;
-        Double stationLong = 0.0;
         try {
             styleText(name, array.getJSONObject(index).getString("name"), 18,
                     robotoBold, Color.BLACK);
@@ -184,7 +175,7 @@ public class ListFragment extends Fragment {
         box.addView(freeBikes);
         box.addView(emptySlots);
         box.addView(favoritesButton);
-        if(userLocationReady) {
+        if(locationAllowed) {
             styleText(distance, CalculateDistance.distance(userLat, userLong, stationLat, stationLong), 16, robotoNormal, Color.BLACK);
             distance.setLayoutParams(lp4);
             box.addView(distance);
@@ -203,9 +194,6 @@ public class ListFragment extends Fragment {
     // Also disables loading spinner when done
     public void populateList() {
         requireActivity().runOnUiThread(() -> {
-            if(!userLong.equals(0.0)) {
-                userLocationReady = true;
-            }
             for(int i=0; i < array.length(); i++) {
                 stationsLinearLayout.addView(createBoxWithData(i));
             }

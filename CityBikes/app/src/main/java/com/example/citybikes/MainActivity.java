@@ -17,7 +17,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
-import android.util.Log;
 import android.view.MenuItem;
 
 import com.example.citybikes.ui.favorites.FavoritesFragment;
@@ -44,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     ActionBarDrawerToggle toggle;
     private double userLat;
     private double userLong;
+    private boolean locationAllowed = false;
 
     /**
      * creates the activity and loads al the content
@@ -74,12 +74,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         navigationView.setNavigationItemSelectedListener(this);
 
-        if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1, this);
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            userLat = location.getLatitude();
+            userLong = location.getLongitude();
+            locationAllowed = true;
         }
-
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1, this);
 
     }
 
@@ -173,6 +175,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     public double getUserLat() {
         return userLat;
+    }
+
+    public boolean getLocationAllowed() {
+        return locationAllowed;
     }
 
     @Override
