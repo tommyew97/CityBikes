@@ -15,12 +15,14 @@ import android.view.ViewGroup;
 
 import com.example.citybikes.R;
 import com.example.citybikes.ui.favorites.AppDatabase;
+import com.example.citybikes.ui.favorites.Station;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 import okhttp3.Call;
@@ -116,16 +118,35 @@ public class ListFragment extends Fragment {
 
 
 
-    public void configureFavoritesButton(ImageButton btn) {
+    public void configureFavoritesButton(ImageButton btn, String name, String id) {
         btn.setImageResource(R.drawable.ic_baseline_star_border_24);
         btn.setBackgroundColor(getResources().getColor(R.color.transparent));
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                btn.setImageResource(R.drawable.ic_baseline_star_24);
+                checkStation(btn,name,id);
             }
         });
     }
+
+    public void checkStation(ImageButton btn, String name, String id) {
+        List<Station> allStations = db.stationsDao().getAllStations();
+        boolean isFavorited = false;
+        for (Station station1: allStations) {
+            if (id.equals(station1.getStationId())) {
+                isFavorited = true;
+                db.stationsDao().delete(station1);
+                btn.setImageResource(R.drawable.ic_baseline_star_border_24);
+            }
+        }
+        if(!isFavorited) {
+            Station station = new Station(name,id);
+            db.stationsDao().insert(station);
+            btn.setImageResource(R.drawable.ic_baseline_star_24);
+        }
+
+    }
+
 
     // Creates one box view with API data
     public RelativeLayout createBoxWithData(int index) {
@@ -144,10 +165,13 @@ public class ListFragment extends Fragment {
             styleText(emptySlots, "Empty slots: " +
                     array.getJSONObject(index).getString("empty_slots"), 16,
                     robotoNormal, Color.BLACK);
+            JSONObject extra = array.getJSONObject(index).getJSONObject("extra");
+            configureFavoritesButton(favoritesButton,array.getJSONObject(index).getString("name"),
+                    extra.getString("uid"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        configureFavoritesButton(favoritesButton);
+
         emptySlots.setLayoutParams(lp);
         freeBikes.setLayoutParams(lp2);
         favoritesButton.setLayoutParams(lp3);

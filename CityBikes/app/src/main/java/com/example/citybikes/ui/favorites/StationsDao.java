@@ -3,6 +3,7 @@ package com.example.citybikes.ui.favorites;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 import java.util.List;
@@ -15,6 +16,7 @@ Inspired by https://github.com/bonigarcia/android-examples/blob/main/DatabaseRoo
 
 @Dao
 public interface StationsDao {
+
 
     @Query("SELECT * FROM station")
     List<Station> getAllStations();
