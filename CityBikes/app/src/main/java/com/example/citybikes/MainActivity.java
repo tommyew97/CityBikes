@@ -75,12 +75,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1, this);
-            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            userLat = location.getLatitude();
-            userLong = location.getLongitude();
-            locationAllowed = true;
+            try {
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1, this);
+                Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                userLat = location.getLatitude();
+                userLong = location.getLongitude();
+                locationAllowed = true;
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                locationAllowed = false;
+            }
         }
 
     }

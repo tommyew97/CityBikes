@@ -164,6 +164,8 @@ public class ListFragment extends Fragment {
             styleText(emptySlots, "Empty slots: " +
                     array.getJSONObject(index).getString("empty_slots"), 16,
                     robotoNormal, Color.BLACK);
+            stationLat = Double.parseDouble(array.getJSONObject(index).getString("latitude"));
+            stationLong = Double.parseDouble(array.getJSONObject(index).getString("longitude"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
