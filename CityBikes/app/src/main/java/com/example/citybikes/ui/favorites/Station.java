@@ -38,4 +38,12 @@ public class Station {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getStationId() {
+        return stationId;
+    }
+
+    public void setStationId(String stationId) {
+        this.stationId = stationId;
+    }
 }
