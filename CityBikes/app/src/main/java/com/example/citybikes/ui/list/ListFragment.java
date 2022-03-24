@@ -155,14 +155,13 @@ public class ListFragment extends Fragment {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkStation(btn,name,id);
+                checkStation(btn, name, id, allStations);
             }
         });
     }
 
 
-    public void checkStation(ImageButton btn, String name, String id) {
-        List<Station> allStations = db.stationsDao().getAllStations();
+    public void checkStation(ImageButton btn, String name, String id, List<Station> allStations) {
         boolean isFavorited = false;
         for (Station station: allStations) {
             if (id.equals(station.getStationId())) {
@@ -172,11 +171,10 @@ public class ListFragment extends Fragment {
             }
         }
         if(!isFavorited) {
-            Station station = new Station(name,id);
+            Station station = new Station(name, id);
             db.stationsDao().insert(station);
             btn.setImageResource(R.drawable.star_filled);
         }
-
     }
 
 
@@ -206,7 +204,6 @@ public class ListFragment extends Fragment {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         emptySlots.setLayoutParams(lp);
         freeBikes.setLayoutParams(lp2);
         favoritesButton.setLayoutParams(lp3);
