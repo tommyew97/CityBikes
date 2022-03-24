@@ -22,10 +22,10 @@ public class Station {
     @ColumnInfo(name = "name")
     public String name;
 
-    public Station(String name, String stationId) {
+    /*public Station(String name, String stationId) {
         this.name = name;
         this.stationId = stationId;
-    }
+    }*/
 
     public long getId() {
         return id;
@@ -37,5 +37,13 @@ public class Station {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getStationId() {
+        return stationId;
+    }
+
+    public void setStationId(String stationId) {
+        this.stationId = stationId;
     }
 }

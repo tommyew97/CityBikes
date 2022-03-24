@@ -8,11 +8,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.citybikes.MainActivity;
 import com.example.citybikes.R;
+import com.example.citybikes.ui.favorites.AppDatabase;
+import com.example.citybikes.ui.favorites.FavoritesFragment;
+import com.example.citybikes.ui.favorites.Station;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,10 +35,12 @@ import okhttp3.Response;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 /**
  * CLass that creates a fragment for the 'List' section. It handles the
@@ -50,8 +58,10 @@ public class ListFragment extends Fragment {
     private RelativeLayout.LayoutParams boxParams;
     private RelativeLayout.LayoutParams lp;
     private RelativeLayout.LayoutParams lp2;
+    private RelativeLayout.LayoutParams lp3;
     private Typeface robotoBold;
     private Typeface robotoNormal;
+    private AppDatabase db;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -63,6 +73,7 @@ public class ListFragment extends Fragment {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
         stationsLinearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        db = AppDatabase.getInstance(getActivity().getApplicationContext());
         setUp();
         return view;
     }
@@ -90,9 +101,14 @@ public class ListFragment extends Fragment {
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         lp2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp3 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
         lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        lp3.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        lp3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+
     }
 
     public void styleText(TextView view, String text, int fontSize, Typeface font, int color) {
@@ -103,6 +119,19 @@ public class ListFragment extends Fragment {
         view.setTextColor(color);
     }
 
+
+
+    public void configureFavoritesButton(ImageButton btn, final int position) {
+        btn.setImageResource(R.drawable.ic_baseline_star_border_24);
+        btn.setBackgroundColor(getResources().getColor(R.color.transparent));
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                btn.setImageResource(R.drawable.ic_baseline_star_24);
+            }
+        });
+    }
+
     // Creates one box view with API data
     public RelativeLayout createBoxWithData(int index) {
         RelativeLayout box = new RelativeLayout(getActivity());
@@ -110,21 +139,27 @@ public class ListFragment extends Fragment {
         TextView name = new TextView(getActivity());
         TextView freeBikes = new TextView(getActivity());
         TextView emptySlots = new TextView(getActivity());
+        ImageButton favoritesButton = new ImageButton(getActivity());
         try {
             styleText(name, array.getJSONObject(index).getString("name"), 18,
                     robotoBold, Color.BLACK);
             styleText(freeBikes, "Free bikes: " +
                     array.getJSONObject(index).getString("free_bikes"), 16,
                     robotoNormal, Color.BLACK);
-            styleText(emptySlots, "Empty slots: " + array.getJSONObject(index).getString("empty_slots"), 16, robotoNormal, Color.BLACK);
+            styleText(emptySlots, "Empty slots: " +
+                    array.getJSONObject(index).getString("empty_slots"), 16,
+                    robotoNormal, Color.BLACK);
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        configureFavoritesButton(favoritesButton, index+1);
         emptySlots.setLayoutParams(lp);
         freeBikes.setLayoutParams(lp2);
+        favoritesButton.setLayoutParams(lp3);
         box.addView(name);
         box.addView(freeBikes);
         box.addView(emptySlots);
+        box.addView(favoritesButton);
         return box;
     }
 
@@ -137,6 +172,7 @@ public class ListFragment extends Fragment {
     // Loop to create all the boxes and add them to the Linear Layout
     // Also disables loading spinner when done
     public void populateList() {
+        ImageButton imageButton = new ImageButton(getActivity());
         requireActivity().runOnUiThread(() -> {
             for(int i=0; i < array.length(); i++) {
                 stationsLinearLayout.addView(createBoxWithData(i));
