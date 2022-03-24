@@ -119,8 +119,20 @@ public class ListFragment extends Fragment {
 
 
     public void configureFavoritesButton(ImageButton btn, String name, String id) {
-        btn.setImageResource(R.drawable.ic_baseline_star_border_24);
+        List<Station> allStations = db.stationsDao().getAllStations();
         btn.setBackgroundColor(getResources().getColor(R.color.transparent));
+        boolean isFavorited = false;
+        for (Station station: allStations) {
+            if (id.equals(station.getStationId())) {
+                isFavorited = true;
+            }
+        }
+        if (isFavorited) {
+            btn.setImageResource(R.drawable.star_filled);
+        }
+        else {
+            btn.setImageResource(R.drawable.star_unfilled);
+        }
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -129,20 +141,21 @@ public class ListFragment extends Fragment {
         });
     }
 
+
     public void checkStation(ImageButton btn, String name, String id) {
         List<Station> allStations = db.stationsDao().getAllStations();
         boolean isFavorited = false;
-        for (Station station1: allStations) {
-            if (id.equals(station1.getStationId())) {
+        for (Station station: allStations) {
+            if (id.equals(station.getStationId())) {
                 isFavorited = true;
-                db.stationsDao().delete(station1);
-                btn.setImageResource(R.drawable.ic_baseline_star_border_24);
+                db.stationsDao().delete(station);
+                btn.setImageResource(R.drawable.star_unfilled);
             }
         }
         if(!isFavorited) {
             Station station = new Station(name,id);
             db.stationsDao().insert(station);
-            btn.setImageResource(R.drawable.ic_baseline_star_24);
+            btn.setImageResource(R.drawable.star_filled);
         }
 
     }
