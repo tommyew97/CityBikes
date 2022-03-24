@@ -12,7 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-
+import com.example.citybikes.MainActivity;
 import com.example.citybikes.R;
 import com.example.citybikes.ui.favorites.AppDatabase;
 import com.example.citybikes.ui.favorites.Station;
@@ -39,6 +39,8 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.example.citybikes.util.CalculateDistance;
+
 /**
  * CLass that creates a fragment for the 'List' section. It handles the
  * visualization and renders necessary elements
@@ -59,6 +61,12 @@ public class ListFragment extends Fragment {
     private Typeface robotoBold;
     private Typeface robotoNormal;
     private AppDatabase db;
+    private RelativeLayout.LayoutParams lp4;
+    private Double userLat;
+    private Double userLong;
+    private Double stationLat;
+    private Double stationLong;
+    private boolean locationAllowed;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -105,7 +113,18 @@ public class ListFragment extends Fragment {
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         lp3.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         lp3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-
+        lp4 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp4.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        lp4.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        lp2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        locationAllowed = ((MainActivity) getActivity()).getLocationAllowed();
+        if(locationAllowed) {
+            userLong = ((MainActivity) getActivity()).getUserLong();
+            userLat = ((MainActivity) getActivity()).getUserLat();
+        }
     }
 
     public void styleText(TextView view, String text, int fontSize, Typeface font, int color) {
@@ -169,6 +188,7 @@ public class ListFragment extends Fragment {
         TextView freeBikes = new TextView(getActivity());
         TextView emptySlots = new TextView(getActivity());
         ImageButton favoritesButton = new ImageButton(getActivity());
+        TextView distance = new TextView(getActivity());
         try {
             styleText(name, array.getJSONObject(index).getString("name"), 18,
                     robotoBold, Color.BLACK);
@@ -181,6 +201,8 @@ public class ListFragment extends Fragment {
             JSONObject extra = array.getJSONObject(index).getJSONObject("extra");
             configureFavoritesButton(favoritesButton,array.getJSONObject(index).getString("name"),
                     extra.getString("uid"));
+            stationLat = Double.parseDouble(array.getJSONObject(index).getString("latitude"));
+            stationLong = Double.parseDouble(array.getJSONObject(index).getString("longitude"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -192,8 +214,14 @@ public class ListFragment extends Fragment {
         box.addView(freeBikes);
         box.addView(emptySlots);
         box.addView(favoritesButton);
+        if(locationAllowed) {
+            styleText(distance, CalculateDistance.distance(userLat, userLong, stationLat, stationLong), 16, robotoNormal, Color.BLACK);
+            distance.setLayoutParams(lp4);
+            box.addView(distance);
+        }
         return box;
     }
+
 
     public void styleBox(RelativeLayout box) {
         box.setLayoutParams(boxParams);

@@ -9,7 +9,12 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 
 import android.view.MenuItem;
@@ -30,12 +35,15 @@ import com.google.android.material.navigation.NavigationView;
  *      vid 3: Crear un menú inferior con Button Navigation:'https://www.youtube.com/watch?v=pHNXlQXpi2s&t=580s'
  *
  */
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, LocationListener {
 
     DrawerLayout drawerLayout;
     NavigationView navigationView;
     Toolbar toolbar;
     ActionBarDrawerToggle toggle;
+    private double userLat;
+    private double userLong;
+    private boolean locationAllowed = false;
 
     /**
      * creates the activity and loads al the content
@@ -65,6 +73,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
+
+        if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 1, this);
+                Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                userLat = location.getLatitude();
+                userLong = location.getLongitude();
+                locationAllowed = true;
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                locationAllowed = false;
+            }
+        }
+
     }
 
     /**
@@ -151,4 +175,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return super.onOptionsItemSelected(item);
     }
 
+    public double getUserLong() {
+        return userLong;
+    }
+
+    public double getUserLat() {
+        return userLat;
+    }
+
+    public boolean getLocationAllowed() {
+        return locationAllowed;
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+        userLat = location.getLatitude();
+        userLong = location.getLongitude();
+    }
 }
