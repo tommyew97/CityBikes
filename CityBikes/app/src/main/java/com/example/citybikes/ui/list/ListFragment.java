@@ -15,12 +15,14 @@ import android.view.ViewGroup;
 import com.example.citybikes.MainActivity;
 import com.example.citybikes.R;
 import com.example.citybikes.ui.favorites.AppDatabase;
+import com.example.citybikes.ui.favorites.Station;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 import okhttp3.Call;
@@ -135,16 +137,47 @@ public class ListFragment extends Fragment {
 
 
 
-    public void configureFavoritesButton(ImageButton btn) {
-        btn.setImageResource(R.drawable.ic_baseline_star_border_24);
+    public void configureFavoritesButton(ImageButton btn, String name, String id) {
+        List<Station> allStations = db.stationsDao().getAllStations();
         btn.setBackgroundColor(getResources().getColor(R.color.transparent));
+        boolean isFavorited = false;
+        for (Station station: allStations) {
+            if (id.equals(station.getStationId())) {
+                isFavorited = true;
+            }
+        }
+        if (isFavorited) {
+            btn.setImageResource(R.drawable.star_filled);
+        }
+        else {
+            btn.setImageResource(R.drawable.star_unfilled);
+        }
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                btn.setImageResource(R.drawable.ic_baseline_star_24);
+                checkStation(btn, name, id);
             }
         });
     }
+
+
+    public void checkStation(ImageButton btn, String name, String id) {
+        List<Station> allStations = db.stationsDao().getAllStations();
+        boolean isFavorited = false;
+        for (Station station: allStations) {
+            if (id.equals(station.getStationId())) {
+                isFavorited = true;
+                db.stationsDao().delete(station);
+                btn.setImageResource(R.drawable.star_unfilled);
+            }
+        }
+        if(!isFavorited) {
+            Station station = new Station(name, id);
+            db.stationsDao().insert(station);
+            btn.setImageResource(R.drawable.star_filled);
+        }
+    }
+
 
     // Creates one box view with API data
     public RelativeLayout createBoxWithData(int index) {
@@ -164,12 +197,14 @@ public class ListFragment extends Fragment {
             styleText(emptySlots, "Empty slots: " +
                     array.getJSONObject(index).getString("empty_slots"), 16,
                     robotoNormal, Color.BLACK);
+            JSONObject extra = array.getJSONObject(index).getJSONObject("extra");
+            configureFavoritesButton(favoritesButton,array.getJSONObject(index).getString("name"),
+                    extra.getString("uid"));
             stationLat = Double.parseDouble(array.getJSONObject(index).getString("latitude"));
             stationLong = Double.parseDouble(array.getJSONObject(index).getString("longitude"));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        configureFavoritesButton(favoritesButton);
         emptySlots.setLayoutParams(lp);
         freeBikes.setLayoutParams(lp2);
         favoritesButton.setLayoutParams(lp3);
