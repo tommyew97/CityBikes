@@ -27,10 +27,6 @@ public class FavoritesFragment extends Fragment {
         return new FavoritesFragment();
     }
 
-    public FavoritesFragment() {
-
-    }
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
