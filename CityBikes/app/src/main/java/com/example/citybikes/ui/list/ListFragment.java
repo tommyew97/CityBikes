@@ -155,13 +155,14 @@ public class ListFragment extends Fragment {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkStation(btn, name, id, allStations);
+                checkStation(btn, name, id);
             }
         });
     }
 
 
-    public void checkStation(ImageButton btn, String name, String id, List<Station> allStations) {
+    public void checkStation(ImageButton btn, String name, String id) {
+        List<Station> allStations = db.stationsDao().getAllStations();
         boolean isFavorited = false;
         for (Station station: allStations) {
             if (id.equals(station.getStationId())) {
