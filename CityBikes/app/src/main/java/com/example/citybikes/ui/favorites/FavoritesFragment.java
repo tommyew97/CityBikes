@@ -1,12 +1,10 @@
 package com.example.citybikes.ui.favorites;
 
 import android.graphics.Color;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.example.citybikes.R;
 import com.example.citybikes.ui.list.ListFragment;
 
 import org.json.JSONArray;
