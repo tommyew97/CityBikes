@@ -89,8 +89,7 @@ public class FavoritesFragment extends ListFragment {
 
     public void addEmptyFavoritesText() {
         TextView favorites = new TextView(getActivity());
-        String text = "Add favorites";
-        styleText(favorites, text, 20, robotoBold, Color.BLACK);
+        styleText(favorites, "Add favorites", 20, robotoBold, Color.BLACK);
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
