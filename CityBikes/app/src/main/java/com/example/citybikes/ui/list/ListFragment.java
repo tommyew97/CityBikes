@@ -48,19 +48,19 @@ import com.example.citybikes.util.CalculateDistance;
 public class ListFragment extends Fragment {
 
     private ListViewModel mViewModel;
-    private static final String citybikesURL = "http://api.citybik.es/v2/networks/bicimad";
-    private LinearLayout stationsLinearLayout;
+    protected static final String citybikesURL = "http://api.citybik.es/v2/networks/bicimad";
+    protected LinearLayout stationsLinearLayout;
     private ProgressBar progressBar;
-    private JSONObject mainObject;
-    private JSONObject network;
-    private JSONArray array;
+    protected JSONObject mainObject;
+    protected JSONObject network;
+    protected JSONArray array;
     private RelativeLayout.LayoutParams boxParams;
     private RelativeLayout.LayoutParams lp;
     private RelativeLayout.LayoutParams lp2;
     private RelativeLayout.LayoutParams lp3;
-    private Typeface robotoBold;
+    protected Typeface robotoBold;
     private Typeface robotoNormal;
-    private AppDatabase db;
+    protected AppDatabase db;
     private RelativeLayout.LayoutParams lp4;
     private Double userLat;
     private Double userLong;
