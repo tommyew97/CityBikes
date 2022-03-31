@@ -53,7 +53,7 @@ public class FavoritesFragment extends ListFragment {
                         mainObject = new JSONObject(reply);
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray)network.get("stations");
-                        filterStationByFavorite();
+                        filterStations();
                         populateList();
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -61,9 +61,10 @@ public class FavoritesFragment extends ListFragment {
                 }
             }
         });
-
     }
-    public void filterStationByFavorite(){
+
+
+    public void filterStations(){
         List<Station> stations = db.stationsDao().getAllStations();
         JSONArray favoriteArray = new JSONArray();
         if (stations.size() == 0) {
@@ -84,6 +85,7 @@ public class FavoritesFragment extends ListFragment {
         }
         array = favoriteArray;
     }
+
 
     public void addEmptyFavoritesText() {
         TextView favorites = new TextView(getActivity());
