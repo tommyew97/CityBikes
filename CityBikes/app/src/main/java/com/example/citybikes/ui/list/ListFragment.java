@@ -22,6 +22,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -64,8 +67,6 @@ public class ListFragment extends Fragment {
     private RelativeLayout.LayoutParams lp4;
     private Double userLat;
     private Double userLong;
-    private Double stationLat;
-    private Double stationLong;
     private boolean locationAllowed;
 
     public static ListFragment newInstance() {
@@ -188,6 +189,7 @@ public class ListFragment extends Fragment {
         TextView emptySlots = new TextView(getActivity());
         ImageButton favoritesButton = new ImageButton(getActivity());
         TextView distance = new TextView(getActivity());
+        String stationDistance = "";
         try {
             styleText(name, array.getJSONObject(index).getString("name"), 18,
                     robotoBold, Color.BLACK);
@@ -200,8 +202,7 @@ public class ListFragment extends Fragment {
             JSONObject extra = array.getJSONObject(index).getJSONObject("extra");
             configureFavoritesButton(favoritesButton,array.getJSONObject(index).getString("name"),
                     extra.getString("uid"));
-            stationLat = Double.parseDouble(array.getJSONObject(index).getString("latitude"));
-            stationLong = Double.parseDouble(array.getJSONObject(index).getString("longitude"));
+            stationDistance = CalculateDistance.numberToString(Double.parseDouble(array.getJSONObject(index).getString("distance")));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -213,7 +214,7 @@ public class ListFragment extends Fragment {
         box.addView(emptySlots);
         box.addView(favoritesButton);
         if(locationAllowed) {
-            styleText(distance, CalculateDistance.distance(userLat, userLong, stationLat, stationLong), 16, robotoNormal, Color.BLACK);
+            styleText(distance, stationDistance, 16, robotoNormal, Color.BLACK);
             distance.setLayoutParams(lp4);
             box.addView(distance);
         }
@@ -236,6 +237,65 @@ public class ListFragment extends Fragment {
             }
             progressBar.setVisibility(View.GONE);
         });
+    }
+
+    public void sortByDistance() {
+        double distance;
+        Double stationLat;
+        Double stationLong;
+        JSONObject station;
+        // Adding distance to all station objects
+        for(int i = 0; i < array.length(); i++) {
+            try {
+                station = array.getJSONObject(i);
+                stationLat = Double.parseDouble(station.getString("latitude"));
+                stationLong = Double.parseDouble(station.getString("longitude"));
+                distance = CalculateDistance.distance(userLat, userLong, stationLat, stationLong);
+                array.getJSONObject(i).put("distance", distance);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+        array = sortJSONByField(array, "distance");
+    }
+
+    // Reference: https://discourse.processing.org/t/sorting-a-jsonarray-by-one-of-its-values/4911/5
+    public JSONArray sortJSONByField(JSONArray jsonArr, String sortBy) {
+        JSONArray sortedJsonArray = new JSONArray();
+        List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+        // Convert JSONArray to List
+        for (int i = 0; i < jsonArr.length(); i++) {
+            try {
+                jsonValues.add(jsonArr.getJSONObject(i));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        final String KEY_NAME = sortBy;
+        // Sort list
+        Collections.sort( jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                double valA = 0;
+                double valB = 0;
+
+                try {
+                    valA = Double.parseDouble(a.getString(KEY_NAME));
+                    valB = Double.parseDouble(b.getString(KEY_NAME));
+                }
+                catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                double difference = valA - valB;
+                return (int) difference;
+            }
+        });
+        // Convert back to JSONArray
+        for(int i = 0; i < jsonValues.size(); i++) {
+            sortedJsonArray.put(jsonValues.get(i));
+        }
+        return sortedJsonArray;
     }
 
     // Inspired by this source: https://www.youtube.com/watch?v=oGWJ8xD2W6k
@@ -261,6 +321,7 @@ public class ListFragment extends Fragment {
                         mainObject = new JSONObject(reply);
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray)network.get("stations");
+                        if(locationAllowed) sortByDistance();
                         populateList();
                     } catch (JSONException e) {
                         e.printStackTrace();
