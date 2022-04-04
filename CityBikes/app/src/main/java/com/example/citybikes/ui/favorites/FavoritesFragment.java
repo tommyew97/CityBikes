@@ -1,6 +1,8 @@
 package com.example.citybikes.ui.favorites;
 
 import android.graphics.Color;
+import android.view.Gravity;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -89,11 +91,14 @@ public class FavoritesFragment extends ListFragment {
 
     public void addEmptyFavoritesText() {
         TextView favorites = new TextView(getActivity());
-        styleText(favorites, "Add favorites", 20, robotoBold, Color.BLACK);
+        styleText(favorites, "No favorites to show", 40, robotoBold, Color.parseColor("#CC383838"));
+        params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
+        favorites.setLayoutParams(params);
+        favorites.setGravity(Gravity.CENTER);
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                stationsLinearLayout.addView(favorites);
+                constraintLayout.addView(favorites);
             }
         });
     }

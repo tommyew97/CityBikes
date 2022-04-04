@@ -1,5 +1,6 @@
 package com.example.citybikes.ui.list;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
@@ -68,6 +69,8 @@ public class ListFragment extends Fragment {
     private Double userLat;
     private Double userLong;
     private boolean locationAllowed;
+    protected ConstraintLayout constraintLayout;
+    protected RelativeLayout.LayoutParams params;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -78,6 +81,7 @@ public class ListFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
         stationsLinearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
+        constraintLayout = (ConstraintLayout) view.findViewById(R.id.constraintLayout);
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         db = AppDatabase.getInstance(getActivity().getApplicationContext());
         setUp();
