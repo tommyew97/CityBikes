@@ -69,11 +69,8 @@ public class ListFragment extends Fragment {
     private RelativeLayout.LayoutParams lp4;
     private Double userLat;
     private Double userLong;
-<<<<<<< HEAD
     protected ConstraintLayout constraintLayout;
     protected RelativeLayout.LayoutParams params;
-=======
->>>>>>> 2c83fe93b12dc29e92380f61180eadb84b5783b0
     protected boolean locationAllowed;
     protected SwipeRefreshLayout refreshContainer;
 
@@ -86,10 +83,7 @@ public class ListFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
         stationsLinearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
-<<<<<<< HEAD
         constraintLayout = (ConstraintLayout) view.findViewById(R.id.constraintLayout);
-=======
->>>>>>> 2c83fe93b12dc29e92380f61180eadb84b5783b0
         refreshContainer = (SwipeRefreshLayout) view.findViewById(R.id.refreshContainer);
         refreshContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
