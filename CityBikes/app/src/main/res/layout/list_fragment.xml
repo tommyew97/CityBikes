@@ -6,7 +6,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.list.ListFragment">
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2c83fe93b12dc29e92380f61180eadb84b5783b0
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/refreshContainer"
@@ -14,13 +17,18 @@
         android:layout_height="match_parent">
         <ScrollView
             android:layout_width="match_parent"
+<<<<<<< HEAD
             android:layout_height="match_parent"
             android:id="@+id/scrollView">
+=======
+            android:layout_height="match_parent">
+>>>>>>> 2c83fe93b12dc29e92380f61180eadb84b5783b0
             <LinearLayout
                 android:id="@+id/linearLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" >
+<<<<<<< HEAD
             </LinearLayout>
         </ScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -35,4 +43,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+=======
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminateTint="@android:color/holo_purple"/>
+            </LinearLayout>
+        </ScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+>>>>>>> 2c83fe93b12dc29e92380f61180eadb84b5783b0
 </androidx.constraintlayout.widget.ConstraintLayout>
