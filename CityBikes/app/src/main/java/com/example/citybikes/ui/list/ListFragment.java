@@ -159,8 +159,6 @@ public class ListFragment extends Fragment {
         view.setTextColor(color);
     }
 
-
-
     public void configureFavoritesButton(ImageButton btn, String name, String id) {
         List<Station> allStations = db.stationsDao().getAllStations();
         btn.setBackgroundColor(getResources().getColor(R.color.transparent));
@@ -184,7 +182,6 @@ public class ListFragment extends Fragment {
         });
     }
 
-
     public void checkStation(ImageButton btn, String name, String id) {
         List<Station> allStations = db.stationsDao().getAllStations();
         boolean isFavorited = false;
@@ -201,7 +198,6 @@ public class ListFragment extends Fragment {
             btn.setImageResource(R.drawable.star_filled);
         }
     }
-
 
     // Creates one box view with API data
     public RelativeLayout createBoxWithData(int index) {
@@ -244,7 +240,6 @@ public class ListFragment extends Fragment {
         return box;
     }
 
-
     public void styleBox(RelativeLayout box) {
         box.setLayoutParams(boxParams);
         box.setBackgroundResource(R.drawable.bottomborder);
@@ -278,7 +273,6 @@ public class ListFragment extends Fragment {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
         }
         array = sortJSONByField(array, "distance");
     }
