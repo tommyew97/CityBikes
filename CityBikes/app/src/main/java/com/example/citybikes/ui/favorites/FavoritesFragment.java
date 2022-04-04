@@ -54,6 +54,8 @@ public class FavoritesFragment extends ListFragment {
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray)network.get("stations");
                         filterStations();
+                        if(locationAllowed) sortByDistance();
+                        refreshContainer.setRefreshing(false);
                         populateList();
                     } catch (JSONException e) {
                         e.printStackTrace();

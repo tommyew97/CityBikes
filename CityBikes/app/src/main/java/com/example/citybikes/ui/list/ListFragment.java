@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -67,7 +68,8 @@ public class ListFragment extends Fragment {
     private RelativeLayout.LayoutParams lp4;
     private Double userLat;
     private Double userLong;
-    private boolean locationAllowed;
+    protected boolean locationAllowed;
+    protected SwipeRefreshLayout refreshContainer;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -78,6 +80,13 @@ public class ListFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
         stationsLinearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
+        refreshContainer = (SwipeRefreshLayout) view.findViewById(R.id.refreshContainer);
+        refreshContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshStationsList();
+            }
+        });
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         db = AppDatabase.getInstance(getActivity().getApplicationContext());
         setUp();
@@ -99,10 +108,23 @@ public class ListFragment extends Fragment {
 
     // One time setup of UI elements such as layout parameters and fonts
     public void setUp() {
-        boxParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                225);
         robotoBold = Typeface.create("sans-serif", Typeface.BOLD);
         robotoNormal = Typeface.create("sans-serif", Typeface.NORMAL);
+        layoutParameterSetUp();
+        locationAllowed = ((MainActivity) getActivity()).getLocationAllowed();
+        updateUserPosition();
+    }
+
+    public void updateUserPosition() {
+        if(locationAllowed) {
+            userLong = ((MainActivity) getActivity()).getUserLong();
+            userLat = ((MainActivity) getActivity()).getUserLat();
+        }
+    }
+
+    public void layoutParameterSetUp() {
+        boxParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                225);
         lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                 RelativeLayout.LayoutParams.WRAP_CONTENT);
         lp2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -121,11 +143,12 @@ public class ListFragment extends Fragment {
         lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        locationAllowed = ((MainActivity) getActivity()).getLocationAllowed();
-        if(locationAllowed) {
-            userLong = ((MainActivity) getActivity()).getUserLong();
-            userLat = ((MainActivity) getActivity()).getUserLat();
-        }
+    }
+
+    public void refreshStationsList() {
+        updateUserPosition();
+        stationsLinearLayout.removeAllViews();
+        getData();
     }
 
     public void styleText(TextView view, String text, int fontSize, Typeface font, int color) {
@@ -322,6 +345,7 @@ public class ListFragment extends Fragment {
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray)network.get("stations");
                         if(locationAllowed) sortByDistance();
+                        refreshContainer.setRefreshing(false);
                         populateList();
                     } catch (JSONException e) {
                         e.printStackTrace();
