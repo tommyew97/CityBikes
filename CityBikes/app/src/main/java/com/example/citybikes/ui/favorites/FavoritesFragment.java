@@ -2,6 +2,7 @@ package com.example.citybikes.ui.favorites;
 
 import android.graphics.Color;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -33,7 +34,7 @@ public class FavoritesFragment extends ListFragment {
 
 
     @Override
-    public void getData() {
+    public void getData(String sortKey) {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -56,7 +57,7 @@ public class FavoritesFragment extends ListFragment {
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray)network.get("stations");
                         filterStations();
-                        if(locationAllowed) sortByDistance();
+                        if(locationAllowed) sortByField("distance");
                         refreshContainer.setRefreshing(false);
                         populateList();
                     } catch (JSONException e) {
@@ -67,12 +68,22 @@ public class FavoritesFragment extends ListFragment {
         });
     }
 
+    @Override
+    public void populateList() {
+        requireActivity().runOnUiThread(() -> {
+            for(int i=0; i < array.length(); i++) {
+                stationsLinearLayout.addView(createBoxWithData(i));
+            }
+            progressBar.setVisibility(View.GONE);
+        });
+    }
+
 
     public void filterStations(){
         List<Station> stations = db.stationsDao().getAllStations();
         JSONArray favoriteArray = new JSONArray();
         if (stations.size() == 0) {
-            addEmptyFavoritesText();
+            styleEmptyFavoritesPage();
         }
         else {
             for (int i = 0; i < array.length(); i++) {
@@ -91,7 +102,7 @@ public class FavoritesFragment extends ListFragment {
     }
 
 
-    public void addEmptyFavoritesText() {
+    public void styleEmptyFavoritesPage() {
         TextView favorites = new TextView(getActivity());
         styleText(favorites, "No favorites to show", 40, robotoBold, Color.parseColor("#CC383838"));
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);

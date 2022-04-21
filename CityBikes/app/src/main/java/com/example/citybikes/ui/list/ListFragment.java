@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -24,9 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,11 +37,14 @@ import okhttp3.Response;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import com.example.citybikes.util.SortStations;
 
 import com.example.citybikes.util.CalculateDistance;
 
@@ -55,7 +57,7 @@ public class ListFragment extends Fragment {
     private ListViewModel mViewModel;
     protected static final String citybikesURL = "http://api.citybik.es/v2/networks/bicimad";
     protected LinearLayout stationsLinearLayout;
-    private ProgressBar progressBar;
+    protected ProgressBar progressBar;
     protected JSONObject mainObject;
     protected JSONObject network;
     protected JSONArray array;
@@ -73,6 +75,8 @@ public class ListFragment extends Fragment {
     protected RelativeLayout.LayoutParams params;
     protected boolean locationAllowed;
     protected SwipeRefreshLayout refreshContainer;
+    protected String currentSortKey;
+    protected Button sortButton;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -82,24 +86,49 @@ public class ListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
+        currentSortKey = "distance";
         stationsLinearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
         constraintLayout = (ConstraintLayout) view.findViewById(R.id.constraintLayout);
         refreshContainer = (SwipeRefreshLayout) view.findViewById(R.id.refreshContainer);
         refreshContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                refreshStationsList();
+                refreshStationsList(currentSortKey);
             }
         });
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         db = AppDatabase.getInstance(getActivity().getApplicationContext());
+        HashMap<String, String> sortKeys = new HashMap<>();
+        sortKeys.put("Name", "sortableName");
+        sortKeys.put("Distance", "distance");
+        sortKeys.put("Free bikes", "free_bikes");
+        sortKeys.put("Empty slots", "empty_slots");
+        sortButton = (Button) view.findViewById(R.id.sortButton);
+        sortButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PopupMenu popupMenu = new PopupMenu(getActivity(), sortButton);
+                popupMenu.getMenuInflater().inflate(R.menu.sorting_menu, popupMenu.getMenu());
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        String menuTitle = String.valueOf(menuItem.getTitle());
+                        String sortKey = sortKeys.get(menuTitle);
+                        currentSortKey = sortKey;
+                        refreshStationsList(sortKey);
+                        return true;
+                    }
+                });
+                popupMenu.show();
+            }
+        });
         setUp();
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        getData();
+        getData(currentSortKey);
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -149,10 +178,11 @@ public class ListFragment extends Fragment {
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
     }
 
-    public void refreshStationsList() {
+    public void refreshStationsList(String sortKey) {
         updateUserPosition();
         stationsLinearLayout.removeAllViews();
-        getData();
+        progressBar.setVisibility(View.VISIBLE);
+        getData(sortKey);
     }
 
     public void styleText(TextView view, String text, int fontSize, Typeface font, int color) {
@@ -214,7 +244,7 @@ public class ListFragment extends Fragment {
         TextView distance = new TextView(getActivity());
         String stationDistance = "";
         try {
-            styleText(name, array.getJSONObject(index).getString("name"), 18,
+            styleText(name, array.getJSONObject(index).getString("sortableName"), 18,
                     robotoBold, Color.BLACK);
             styleText(freeBikes, "Free bikes: " +
                     array.getJSONObject(index).getString("free_bikes"), 16,
@@ -258,69 +288,37 @@ public class ListFragment extends Fragment {
                 stationsLinearLayout.addView(createBoxWithData(i));
             }
             progressBar.setVisibility(View.GONE);
+            sortButton.setVisibility(View.VISIBLE);
         });
     }
 
-    public void sortByDistance() {
+    public void sortByField(String sortKey) {
         double distance;
         Double stationLat;
         Double stationLong;
         JSONObject station;
-        // Adding distance to all station objects
+        String rawName;
+        String sortableName;
+        // Adding distance and sortable name to all station objects
         for(int i = 0; i < array.length(); i++) {
             try {
                 station = array.getJSONObject(i);
                 stationLat = Double.parseDouble(station.getString("latitude"));
                 stationLong = Double.parseDouble(station.getString("longitude"));
                 distance = CalculateDistance.distance(userLat, userLong, stationLat, stationLong);
+                rawName = station.getString("name");
+                sortableName = rawName.split(" ", 3)[2];
                 array.getJSONObject(i).put("distance", distance);
+                array.getJSONObject(i).put("sortableName", sortableName);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        array = sortJSONByField(array, "distance");
-    }
-
-    // Reference: https://discourse.processing.org/t/sorting-a-jsonarray-by-one-of-its-values/4911/5
-    public JSONArray sortJSONByField(JSONArray jsonArr, String sortBy) {
-        JSONArray sortedJsonArray = new JSONArray();
-        List<JSONObject> jsonValues = new ArrayList<JSONObject>();
-        // Convert JSONArray to List
-        for (int i = 0; i < jsonArr.length(); i++) {
-            try {
-                jsonValues.add(jsonArr.getJSONObject(i));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        final String KEY_NAME = sortBy;
-        // Sort list
-        Collections.sort( jsonValues, new Comparator<JSONObject>() {
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                double valA = 0;
-                double valB = 0;
-
-                try {
-                    valA = Double.parseDouble(a.getString(KEY_NAME));
-                    valB = Double.parseDouble(b.getString(KEY_NAME));
-                }
-                catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                double difference = valA - valB;
-                return (int) difference;
-            }
-        });
-        // Convert back to JSONArray
-        for(int i = 0; i < jsonValues.size(); i++) {
-            sortedJsonArray.put(jsonValues.get(i));
-        }
-        return sortedJsonArray;
+        array = SortStations.sortStationsByField(array, sortKey);
     }
 
     // Inspired by this source: https://www.youtube.com/watch?v=oGWJ8xD2W6k
-    public void getData() {
+    public void getData(String sortKey) {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -342,7 +340,7 @@ public class ListFragment extends Fragment {
                         mainObject = new JSONObject(reply);
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray)network.get("stations");
-                        if(locationAllowed) sortByDistance();
+                        if(locationAllowed) sortByField(sortKey);
                         refreshContainer.setRefreshing(false);
                         populateList();
                     } catch (JSONException e) {
