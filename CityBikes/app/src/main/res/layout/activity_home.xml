@@ -13,21 +13,16 @@
         android:layout_height="75dp"
         android:layout_marginTop="416dp"
         android:layout_marginEnd="112dp"
-        android:backgroundTint="@color/white"
-        android:insetTop="6dp"
+        android:fontFamily="@font/montserrat_medium"
         android:onClick="getStarted"
         android:text="@string/getStartedButton"
         android:textAllCaps="false"
         android:textColor="@color/black"
-        android:textSize="17sp"
-        android:textStyle="bold"
+        android:textSize="23sp"
+        android:background="@drawable/rounded_rectangle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:strokeColor="#88d3ce"
-        android:bottomRightRadius="15dp"
-        android:bottomLeftRadius="15dp"
-        android:topLeftRadius="15dp"
-        android:topRightRadius="15dp"/>
+        android:elevation="20dp" />
 
     <ImageView
         android:id="@+id/imageView"
