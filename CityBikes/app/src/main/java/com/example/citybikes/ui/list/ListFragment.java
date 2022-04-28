@@ -86,6 +86,7 @@ public class ListFragment extends Fragment {
         return new ListFragment();
     }
 
+    // TODO: Make strings constants?
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -153,13 +154,12 @@ public class ListFragment extends Fragment {
         locationAllowed = ((MainActivity) getActivity()).getLocationAllowed();
         if(locationAllowed) currentSortKey = "distance";
         else currentSortKey = "sortableName";
-        // Remove
-        currentSortKey = "name";
         updateUserPosition();
         numberOfLoadedStations = 0;
     }
 
     // Reference: https://stackoverflow.com/questions/10316743/detect-end-of-scrollview
+    // Used to enable infinite scroll, loads more stations when scrolled to the bottom
     public void detectScrolledToBottom(ScrollView scrollView) {
         scrollView.getViewTreeObserver()
                 .addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
@@ -269,8 +269,7 @@ public class ListFragment extends Fragment {
         TextView distance = new TextView(getActivity());
         String stationDistance = "";
         try {
-            // Change back
-            styleText(name, array.getJSONObject(index).getString("name"), 18,
+            styleText(name, array.getJSONObject(index).getString("sortableName"), 18,
                     robotoBold, Color.BLACK);
             styleText(freeBikes, "Free bikes: " +
                     array.getJSONObject(index).getString("free_bikes"), 16,
@@ -281,7 +280,9 @@ public class ListFragment extends Fragment {
             JSONObject extra = array.getJSONObject(index).getJSONObject("extra");
             configureFavoritesButton(favoritesButton,array.getJSONObject(index).getString("name"),
                     extra.getString("uid"));
-            stationDistance = CalculateDistance.numberToString(Double.parseDouble(array.getJSONObject(index).getString("distance")));
+            if(locationAllowed) {
+                stationDistance = CalculateDistance.numberToString(Double.parseDouble(array.getJSONObject(index).getString("distance")));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -330,15 +331,18 @@ public class ListFragment extends Fragment {
         String rawName;
         String sortableName;
         // Adding distance and sortable name to all station objects
+        // Should maybe be moved to separate method
         for(int i = 0; i < array.length(); i++) {
             try {
                 station = array.getJSONObject(i);
-                stationLat = Double.parseDouble(station.getString("latitude"));
-                stationLong = Double.parseDouble(station.getString("longitude"));
-                distance = CalculateDistance.distance(userLat, userLong, stationLat, stationLong);
+                if(locationAllowed) {
+                    stationLat = Double.parseDouble(station.getString("latitude"));
+                    stationLong = Double.parseDouble(station.getString("longitude"));
+                    distance = CalculateDistance.distance(userLat, userLong, stationLat, stationLong);
+                    array.getJSONObject(i).put("distance", distance);
+                }
                 rawName = station.getString("name");
                 sortableName = rawName.split(" ", 3)[2];
-                array.getJSONObject(i).put("distance", distance);
                 array.getJSONObject(i).put("sortableName", sortableName);
             } catch (JSONException e) {
                 e.printStackTrace();
