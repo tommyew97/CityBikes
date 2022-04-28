@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -57,7 +58,7 @@ public class FavoritesFragment extends ListFragment {
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray)network.get("stations");
                         filterStations();
-                        if(locationAllowed) sortByField("distance");
+                        sortByField(sortKey);
                         refreshContainer.setRefreshing(false);
                         populateList();
                     } catch (JSONException e) {
@@ -78,6 +79,10 @@ public class FavoritesFragment extends ListFragment {
         });
     }
 
+    @Override
+    public void detectScrolledToBottom(ScrollView scrollView) {
+        return;
+    }
 
     public void filterStations(){
         List<Station> stations = db.stationsDao().getAllStations();
