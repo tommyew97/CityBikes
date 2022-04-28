@@ -56,7 +56,7 @@ public class FavoritesFragment extends ListFragment {
                         mainObject = new JSONObject(reply);
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray)network.get("stations");
-                        filterStations();
+                        filterStationsByFavorites();
                         if(locationAllowed) sortByField("distance");
                         refreshContainer.setRefreshing(false);
                         populateList();
@@ -79,7 +79,7 @@ public class FavoritesFragment extends ListFragment {
     }
 
 
-    public void filterStations(){
+    public void filterStationsByFavorites(){
         List<Station> stations = db.stationsDao().getAllStations();
         JSONArray favoriteArray = new JSONArray();
         if (stations.size() == 0) {
