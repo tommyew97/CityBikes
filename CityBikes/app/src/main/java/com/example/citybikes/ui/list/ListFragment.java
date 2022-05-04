@@ -10,7 +10,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,6 +82,8 @@ public class ListFragment extends Fragment {
     protected Button sortButton;
     protected Button filterButton;
     private LinearLayout sortAndFilterLayout;
+    private boolean emptySlotsChecked;
+    private boolean freeBikesChecked;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -89,6 +94,9 @@ public class ListFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
         currentSortKey = "distance";
+        setHasOptionsMenu(true);
+        emptySlotsChecked = false;
+        freeBikesChecked = false;
         stationsLinearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
         constraintLayout = (ConstraintLayout) view.findViewById(R.id.constraintLayout);
         refreshContainer = (SwipeRefreshLayout) view.findViewById(R.id.refreshContainer);
@@ -127,58 +135,85 @@ public class ListFragment extends Fragment {
         });
         filterButton = (Button) view.findViewById(R.id.filterButton);
         filterButton.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View view) {
                 PopupMenu popupMenu = new PopupMenu(getActivity(), filterButton);
                 popupMenu.getMenuInflater().inflate(R.menu.filter_menu, popupMenu.getMenu());
+                if(emptySlotsChecked) {
+                    popupMenu.getMenu().findItem(R.id.filter_empty_slots).setChecked(true);
+                }
+                if(freeBikesChecked) {
+                    popupMenu.getMenu().findItem(R.id.filter_free_bikes).setChecked(true);
+                }
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
-                        JSONArray filterArray = new JSONArray();
-                        switch(menuItem.getItemId()){
-                            case R.id.filter_free_bikes:
-                                for (int i = 0; i < array.length(); i++) {
-                                    try {
-                                        if (!array.getJSONObject(i).getString("free_bikes").equals("0")) {
-                                            JSONObject jsonObject = array.getJSONObject(i);
-                                            filterArray.put(jsonObject);
-                                        }
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                                menuItem.setChecked(!menuItem.isChecked());
-                                array = filterArray;
-                                break;
-
-                            case R.id.filter_empty_slots:
-                                for (int i = 0; i < array.length(); i++) {
-                                    try {
-                                        if (!array.getJSONObject(i).getString("empty_slots").equals("0")) {
-                                            JSONObject jsonObject = array.getJSONObject(i);
-                                            filterArray.put(jsonObject);
-                                        }
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                                menuItem.setChecked(!menuItem.isChecked());
-                                array = filterArray;
-                                break;
-
-                            default:
-                                break;
-                        }
-                        return false;
+                        filterItems(menuItem);
+                        return true;
                     }
                 });
                 popupMenu.show();
             }
         });
-
         setUp();
         return view;
+    }
+
+    public void filterOnKey(String key) {
+        JSONArray filterArray = new JSONArray();
+        for (int i = 0; i < array.length(); i++) {
+            try {
+                if (!array.getJSONObject(i).getString(key).equals("0")) {
+                    JSONObject jsonObject = array.getJSONObject(i);
+                    filterArray.put(jsonObject);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        array = filterArray;
+        stationsLinearLayout.removeAllViews();
+        populateList();
+    }
+
+    public void filterItems(MenuItem item) {
+        int itemID = item.getItemId();
+        Log.d("item ID", "ID: " + itemID + " " + R.id.filter_free_bikes + " " + R.id.filter_empty_slots );
+        switch (itemID) {
+            case R.id.filter_free_bikes:
+                if(item.isChecked()) {
+                    item.setChecked(false);
+                    freeBikesChecked = false;
+                    Log.d("freebikeschecked", "ischecked: " + freeBikesChecked);
+                    refreshFilter(currentSortKey);
+                    if(emptySlotsChecked) filterOnKey("empty_slots");
+
+                }
+                else {
+                    item.setChecked(true);
+                    freeBikesChecked = true;
+                    filterOnKey("free_bikes");
+                    Log.d("freebikeschecked", "else: " + freeBikesChecked);
+                }
+                break;
+            case R.id.filter_empty_slots:
+                if(item.isChecked()) {
+                    item.setChecked(false);
+                    emptySlotsChecked = false;
+                    Log.d("emptyslotschecked", "ischecked: " + emptySlotsChecked);
+                    refreshFilter(currentSortKey);
+                    if(freeBikesChecked) filterOnKey("free_bikes");
+
+
+                }
+                else {
+                    item.setChecked(true);
+                    emptySlotsChecked = true;
+                    filterOnKey("empty_slots");
+                    Log.d("emptyslotschecked", "else: " + emptySlotsChecked);
+                }
+                break;
+        }
     }
 
     @Override
@@ -233,7 +268,16 @@ public class ListFragment extends Fragment {
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
     }
 
+    public void refreshFilter(String sortKey) {
+        updateUserPosition();
+        stationsLinearLayout.removeAllViews();
+        progressBar.setVisibility(View.VISIBLE);
+        getData(sortKey);
+    }
+
     public void refreshStationsList(String sortKey) {
+        emptySlotsChecked = false;
+        freeBikesChecked = false;
         updateUserPosition();
         stationsLinearLayout.removeAllViews();
         progressBar.setVisibility(View.VISIBLE);
@@ -313,6 +357,7 @@ public class ListFragment extends Fragment {
             stationDistance = CalculateDistance.numberToString(Double.parseDouble(array.getJSONObject(index).getString("distance")));
         } catch (JSONException e) {
             e.printStackTrace();
+            Log.d("test1", "createBoxWithData: ");
         }
         emptySlots.setLayoutParams(lp);
         freeBikes.setLayoutParams(lp2);
@@ -355,6 +400,7 @@ public class ListFragment extends Fragment {
         JSONObject station;
         String rawName;
         String sortableName;
+        Log.d("test2", "sortByField: ");
         // Adding distance and sortable name to all station objects
         for(int i = 0; i < array.length(); i++) {
             try {
@@ -368,6 +414,7 @@ public class ListFragment extends Fragment {
                 array.getJSONObject(i).put("sortableName", sortableName);
             } catch (JSONException e) {
                 e.printStackTrace();
+                Log.d("test", "sortByField: ");
             }
         }
         array = SortStations.sortStationsByField(array, sortKey);
