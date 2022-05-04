@@ -46,9 +46,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import com.example.citybikes.util.SortStations;
 
+import com.example.citybikes.util.SortStations;
 import com.example.citybikes.util.CalculateDistance;
+import com.example.citybikes.util.Constants;
 
 /**
  * CLass that creates a fragment for the 'List' section. It handles the
@@ -57,11 +58,8 @@ import com.example.citybikes.util.CalculateDistance;
 public class ListFragment extends Fragment {
 
     private ListViewModel mViewModel;
-    protected static final String citybikesURL = "http://api.citybik.es/v2/networks/bicimad";
     protected LinearLayout stationsLinearLayout;
     protected ProgressBar progressBar;
-    protected JSONObject mainObject;
-    protected JSONObject network;
     protected JSONArray array;
     private RelativeLayout.LayoutParams boxParams;
     private RelativeLayout.LayoutParams lp;
@@ -81,12 +79,12 @@ public class ListFragment extends Fragment {
     protected Button sortButton;
     private int numberOfLoadedStations;
     private int totalNumberOfStations;
+    private static final int STATION_BULK_LOAD_SIZE = 50;
 
     public static ListFragment newInstance() {
         return new ListFragment();
     }
 
-    // TODO: Make strings constants?
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -105,10 +103,10 @@ public class ListFragment extends Fragment {
         progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         db = AppDatabase.getInstance(getActivity().getApplicationContext());
         HashMap<String, String> sortKeys = new HashMap<>();
-        sortKeys.put("Name", "sortableName");
-        sortKeys.put("Distance", "distance");
-        sortKeys.put("Free bikes", "free_bikes");
-        sortKeys.put("Empty slots", "empty_slots");
+        sortKeys.put(Constants.getCapName(), Constants.getSortableName());
+        sortKeys.put(Constants.getCapDistance(), Constants.getDISTANCE());
+        sortKeys.put(Constants.getCapFreeBikes(), Constants.getFreeBikes());
+        sortKeys.put(Constants.getCapEmptySlots(), Constants.getEmptySlots());
         sortButton = (Button) view.findViewById(R.id.sortButton);
         sortButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,8 +150,8 @@ public class ListFragment extends Fragment {
         robotoNormal = Typeface.create("sans-serif", Typeface.NORMAL);
         layoutParameterSetUp();
         locationAllowed = ((MainActivity) getActivity()).getLocationAllowed();
-        if(locationAllowed) currentSortKey = "distance";
-        else currentSortKey = "sortableName";
+        if(locationAllowed) currentSortKey = Constants.getDISTANCE();
+        else currentSortKey = Constants.getSortableName();
         updateUserPosition();
         numberOfLoadedStations = 0;
     }
@@ -222,12 +220,13 @@ public class ListFragment extends Fragment {
         List<Station> allStations = db.stationsDao().getAllStations();
         btn.setBackgroundColor(getResources().getColor(R.color.transparent));
         boolean isFavorited = false;
-        for (Station station: allStations) {
-            if (id.equals(station.getStationId())) {
+        for(Station station: allStations) {
+            if(id.equals(station.getStationId())) {
                 isFavorited = true;
+                break;
             }
         }
-        if (isFavorited) {
+        if(isFavorited) {
             btn.setImageResource(R.drawable.star_filled);
         }
         else {
@@ -244,8 +243,8 @@ public class ListFragment extends Fragment {
     public void checkStation(ImageButton btn, String name, String id) {
         List<Station> allStations = db.stationsDao().getAllStations();
         boolean isFavorited = false;
-        for (Station station: allStations) {
-            if (id.equals(station.getStationId())) {
+        for(Station station: allStations) {
+            if(id.equals(station.getStationId())) {
                 isFavorited = true;
                 db.stationsDao().delete(station);
                 btn.setImageResource(R.drawable.star_unfilled);
@@ -269,19 +268,20 @@ public class ListFragment extends Fragment {
         TextView distance = new TextView(getActivity());
         String stationDistance = "";
         try {
-            styleText(name, array.getJSONObject(index).getString("sortableName"), 18,
+            styleText(name, array.getJSONObject(index).getString(Constants.getSortableName()), 18,
                     robotoBold, Color.BLACK);
             styleText(freeBikes, "Free bikes: " +
-                    array.getJSONObject(index).getString("free_bikes"), 16,
+                    array.getJSONObject(index).getString(Constants.getFreeBikes()), 16,
                     robotoNormal, Color.BLACK);
             styleText(emptySlots, "Empty slots: " +
-                    array.getJSONObject(index).getString("empty_slots"), 16,
+                    array.getJSONObject(index).getString(Constants.getEmptySlots()), 16,
                     robotoNormal, Color.BLACK);
-            JSONObject extra = array.getJSONObject(index).getJSONObject("extra");
-            configureFavoritesButton(favoritesButton,array.getJSONObject(index).getString("name"),
-                    extra.getString("uid"));
+            JSONObject extra = array.getJSONObject(index).getJSONObject(Constants.getEXTRA());
+            configureFavoritesButton(favoritesButton,array.getJSONObject(index).
+                    getString(Constants.getNAME()), extra.getString(Constants.getUID()));
             if(locationAllowed) {
-                stationDistance = CalculateDistance.numberToString(Double.parseDouble(array.getJSONObject(index).getString("distance")));
+                stationDistance = CalculateDistance.numberToString(Double.parseDouble(array.
+                        getJSONObject(index).getString(Constants.getDISTANCE())));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -307,12 +307,14 @@ public class ListFragment extends Fragment {
         box.setPadding(20, 15, 30, 20);
     }
 
-    // Loop to create all the boxes and add them to the Linear Layout
-    // Also disables loading spinner when done
+    /* Loop to create boxes and add them to the Linear Layout
+    Also disables loading spinner when done
+    Adds a bulk of station each time it is called, instead of all at once to improve loading
+    loading speed */
     public void populateList() {
         int end;
-        if(numberOfLoadedStations + 50 > totalNumberOfStations) end = totalNumberOfStations;
-        else end = numberOfLoadedStations + 50;
+        if(numberOfLoadedStations + STATION_BULK_LOAD_SIZE > totalNumberOfStations) end = totalNumberOfStations;
+        else end = numberOfLoadedStations + STATION_BULK_LOAD_SIZE;
         requireActivity().runOnUiThread(() -> {
             for(int i = numberOfLoadedStations; i < end; i++) {
                 stationsLinearLayout.addView(createBoxWithData(i));
@@ -323,7 +325,7 @@ public class ListFragment extends Fragment {
         });
     }
 
-    public void sortByField(String sortKey) {
+    public void addFieldsToStations() {
         double distance;
         Double stationLat;
         Double stationLong;
@@ -331,24 +333,30 @@ public class ListFragment extends Fragment {
         String rawName;
         String sortableName;
         // Adding distance and sortable name to all station objects
-        // Should maybe be moved to separate method
         for(int i = 0; i < array.length(); i++) {
             try {
                 station = array.getJSONObject(i);
                 if(locationAllowed) {
-                    stationLat = Double.parseDouble(station.getString("latitude"));
-                    stationLong = Double.parseDouble(station.getString("longitude"));
+                    stationLat = Double.parseDouble(station.getString(Constants.getLATITUDE()));
+                    stationLong = Double.parseDouble(station.getString(Constants.getLONGITUDE()));
                     distance = CalculateDistance.distance(userLat, userLong, stationLat, stationLong);
-                    array.getJSONObject(i).put("distance", distance);
+                    array.getJSONObject(i).put(Constants.getDISTANCE(), distance);
                 }
-                rawName = station.getString("name");
+                rawName = station.getString(Constants.getNAME());
                 sortableName = rawName.split(" ", 3)[2];
-                array.getJSONObject(i).put("sortableName", sortableName);
+                array.getJSONObject(i).put(Constants.getSortableName(), sortableName);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void sortStationsByField(String sortKey) {
         array = SortStations.sortStationsByField(array, sortKey);
+    }
+
+    public void filterFavorites() {
+        return;
     }
 
     // Inspired by this source: https://www.youtube.com/watch?v=oGWJ8xD2W6k
@@ -356,7 +364,7 @@ public class ListFragment extends Fragment {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
-                .url(citybikesURL)
+                .url(Constants.getCitybikesUrl())
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -371,11 +379,13 @@ public class ListFragment extends Fragment {
                 if(response.isSuccessful()) {
                     String reply = Objects.requireNonNull(response.body()).string();
                     try {
-                        mainObject = new JSONObject(reply);
-                        network = mainObject.getJSONObject("network");
-                        array = (JSONArray)network.get("stations");
+                        JSONObject mainObject = new JSONObject(reply);
+                        JSONObject network = mainObject.getJSONObject(Constants.getNETWORK());
+                        array = (JSONArray)network.get(Constants.getSTATIONS());
                         totalNumberOfStations = array.length();
-                        sortByField(sortKey);
+                        filterFavorites();
+                        addFieldsToStations();
+                        sortStationsByField(sortKey);
                         refreshContainer.setRefreshing(false);
                         populateList();
                     } catch (JSONException e) {
