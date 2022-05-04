@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -119,7 +118,6 @@ public class ListFragment extends Fragment {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
                         String menuTitle = String.valueOf(menuItem.getTitle());
-                        Log.d("title", menuTitle);
                         String sortKey = sortKeys.get(menuTitle);
                         currentSortKey = sortKey;
                         refreshStationsList(sortKey);
@@ -354,10 +352,6 @@ public class ListFragment extends Fragment {
     }
 
     public void sortStationsByField(String sortKey) {
-        Log.d("free", Constants.getFreeBikes());
-        if(sortKey == null) {
-            Log.d("key", "null");
-        }
         array = SortStations.sortStationsByField(array, sortKey);
     }
 
