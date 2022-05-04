@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,42 +33,6 @@ import okhttp3.Response;
 public class FavoritesFragment extends ListFragment {
 
 
-
-    @Override
-    public void getData(String sortKey) {
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder()
-                .url(citybikesURL)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response)
-                    throws IOException {
-                if(response.isSuccessful()) {
-                    String reply = Objects.requireNonNull(response.body()).string();
-                    try {
-                        mainObject = new JSONObject(reply);
-                        network = mainObject.getJSONObject("network");
-                        array = (JSONArray)network.get("stations");
-                        filterStationsByFavorites();
-                        if(locationAllowed) sortByField("distance");
-                        refreshContainer.setRefreshing(false);
-                        populateList();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-    }
-
     @Override
     public void populateList() {
         requireActivity().runOnUiThread(() -> {
@@ -78,8 +43,14 @@ public class FavoritesFragment extends ListFragment {
         });
     }
 
+    @Override
+    public void detectScrolledToBottom(ScrollView scrollView) {
+        return;
+    }
 
-    public void filterStationsByFavorites(){
+
+    @Override
+    public void filterFavorites(){
         List<Station> stations = db.stationsDao().getAllStations();
         JSONArray favoriteArray = new JSONArray();
         if (stations.size() == 0) {
