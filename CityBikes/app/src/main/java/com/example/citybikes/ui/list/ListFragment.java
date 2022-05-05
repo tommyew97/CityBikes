@@ -93,7 +93,6 @@ public class ListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
-        setHasOptionsMenu(true);
         emptySlotsChecked = false;
         freeBikesChecked = false;
         ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
@@ -422,7 +421,6 @@ public class ListFragment extends Fragment {
                 numberOfLoadedStations++;
             }
             progressBar.setVisibility(View.GONE);
-            //sortButton.setVisibility(View.VISIBLE);
             sortAndFilterLayout.setVisibility(View.VISIBLE);
         });
     }
@@ -456,7 +454,6 @@ public class ListFragment extends Fragment {
     public void sortStationsByField(String sortKey) {
         array = SortStations.sortStationsByField(array, sortKey);
     }
-
 
     public void filterFavorites() {
         return;

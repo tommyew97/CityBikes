@@ -48,7 +48,6 @@ public class FavoritesFragment extends ListFragment {
         return;
     }
 
-
     @Override
     public void filterFavorites(){
         List<Station> stations = db.stationsDao().getAllStations();
