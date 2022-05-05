@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="all">
+        <item android:id="@+id/filter_free_bikes"
+            android:title="@string/free_bikes" />
+        <item android:id="@+id/filter_empty_slots"
+            android:title="@string/empty_slots" />
+    </group>
+
+</menu>

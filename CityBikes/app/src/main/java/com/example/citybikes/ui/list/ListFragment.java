@@ -77,6 +77,10 @@ public class ListFragment extends Fragment {
     protected SwipeRefreshLayout refreshContainer;
     protected String currentSortKey;
     protected Button sortButton;
+    protected Button filterButton;
+    private LinearLayout sortAndFilterLayout;
+    private boolean emptySlotsChecked;
+    private boolean freeBikesChecked;
     private int numberOfLoadedStations;
     private int totalNumberOfStations;
     private static final int STATION_BULK_LOAD_SIZE = 50;
@@ -89,11 +93,14 @@ public class ListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
+        emptySlotsChecked = false;
+        freeBikesChecked = false;
         ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
         detectScrolledToBottom(scrollView);
         stationsLinearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
         constraintLayout = (ConstraintLayout) view.findViewById(R.id.constraintLayout);
         refreshContainer = (SwipeRefreshLayout) view.findViewById(R.id.refreshContainer);
+        sortAndFilterLayout = (LinearLayout) view.findViewById(R.id.sort_and_filter_layout);
         refreshContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -123,7 +130,40 @@ public class ListFragment extends Fragment {
                         String menuTitle = String.valueOf(menuItem.getTitle());
                         String sortKey = sortKeys.get(menuTitle);
                         currentSortKey = sortKey;
-                        refreshStationsList(sortKey);
+                        if(emptySlotsChecked && !freeBikesChecked) {
+                            refresh(sortKey, Constants.getEmptySlots(), null);
+                        }
+                        else if(!emptySlotsChecked && freeBikesChecked) {
+                            refresh(sortKey, Constants.getFreeBikes(), null);
+                        }
+                        else if(emptySlotsChecked && freeBikesChecked) {
+                            refresh(sortKey, Constants.getEmptySlots(), Constants.getFreeBikes());
+                        }
+                        else {
+                            refreshStationsList(sortKey);
+                        }
+                        return true;
+                    }
+                });
+                popupMenu.show();
+            }
+        });
+        filterButton = (Button) view.findViewById(R.id.filterButton);
+        filterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PopupMenu popupMenu = new PopupMenu(getActivity(), filterButton);
+                popupMenu.getMenuInflater().inflate(R.menu.filter_menu, popupMenu.getMenu());
+                if(emptySlotsChecked) {
+                    popupMenu.getMenu().findItem(R.id.filter_empty_slots).setChecked(true);
+                }
+                if(freeBikesChecked) {
+                    popupMenu.getMenu().findItem(R.id.filter_free_bikes).setChecked(true);
+                }
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        filterItems(menuItem);
                         return true;
                     }
                 });
@@ -132,6 +172,60 @@ public class ListFragment extends Fragment {
         });
         setUp();
         return view;
+    }
+
+    public void filterOnKey(String key) {
+        JSONArray filterArray = new JSONArray();
+        for (int i = 0; i < array.length(); i++) {
+            try {
+                if (!array.getJSONObject(i).getString(key).equals("0")) {
+                    JSONObject jsonObject = array.getJSONObject(i);
+                    filterArray.put(jsonObject);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        array = filterArray;
+        totalNumberOfStations = array.length();
+        requireActivity().runOnUiThread(() -> {
+            stationsLinearLayout.removeAllViews();
+        });
+    }
+
+    public void filterItems(MenuItem item) {
+        int itemID = item.getItemId();
+        switch (itemID) {
+            case R.id.filter_free_bikes:
+                if(item.isChecked()) {
+                    item.setChecked(false);
+                    freeBikesChecked = false;
+                    if(emptySlotsChecked) refresh(currentSortKey, Constants.getEmptySlots(), null);
+                    else refresh(currentSortKey, null, null);
+
+                }
+                else {
+                    item.setChecked(true);
+                    freeBikesChecked = true;
+                    filterOnKey("free_bikes");
+                    populateList();
+                }
+                break;
+            case R.id.filter_empty_slots:
+                if(item.isChecked()) {
+                    item.setChecked(false);
+                    emptySlotsChecked = false;
+                    if(freeBikesChecked) refresh(currentSortKey, Constants.getFreeBikes(), null);
+                    else refresh(currentSortKey, null, null);
+                }
+                else {
+                    item.setChecked(true);
+                    emptySlotsChecked = true;
+                    filterOnKey("empty_slots");
+                    populateList();
+                }
+                break;
+        }
     }
 
     @Override
@@ -203,12 +297,18 @@ public class ListFragment extends Fragment {
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
     }
 
-    public void refreshStationsList(String sortKey) {
+    public void refresh(String sortKey, String filterKey1, String filterKey2) {
         numberOfLoadedStations = 0;
         updateUserPosition();
         stationsLinearLayout.removeAllViews();
         progressBar.setVisibility(View.VISIBLE);
-        getData(sortKey);
+        getData(sortKey, filterKey1, filterKey2);
+    }
+
+    public void refreshStationsList(String sortKey) {
+        emptySlotsChecked = false;
+        freeBikesChecked = false;
+        refresh(sortKey, null, null);
     }
 
     public void styleText(TextView view, String text, int fontSize, Typeface font, int color) {
@@ -324,7 +424,7 @@ public class ListFragment extends Fragment {
                 numberOfLoadedStations++;
             }
             progressBar.setVisibility(View.GONE);
-            sortButton.setVisibility(View.VISIBLE);
+            sortAndFilterLayout.setVisibility(View.VISIBLE);
         });
     }
 
@@ -362,8 +462,12 @@ public class ListFragment extends Fragment {
         return;
     }
 
-    // Inspired by this source: https://www.youtube.com/watch?v=oGWJ8xD2W6k
     public void getData(String sortKey) {
+        getData(sortKey, null, null);
+    }
+
+    // Inspired by this source: https://www.youtube.com/watch?v=oGWJ8xD2W6k
+    public void getData(String sortKey, String filterKey1, String filterKey2) {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -389,6 +493,8 @@ public class ListFragment extends Fragment {
                         filterFavorites();
                         addFieldsToStations();
                         sortStationsByField(sortKey);
+                        if(filterKey1 != null) filterOnKey(filterKey1);
+                        if(filterKey2 != null) filterOnKey(filterKey2);
                         refreshContainer.setRefreshing(false);
                         populateList();
                     } catch (JSONException e) {
