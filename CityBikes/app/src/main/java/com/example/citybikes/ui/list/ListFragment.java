@@ -113,7 +113,10 @@ public class ListFragment extends Fragment {
             public void onClick(View view) {
                 populateList();
                 PopupMenu popupMenu = new PopupMenu(getActivity(), sortButton);
-                popupMenu.getMenuInflater().inflate(R.menu.sorting_menu, popupMenu.getMenu());
+                int menuID;
+                if(locationAllowed) menuID = R.menu.sorting_menu;
+                else menuID = R.menu.sorting_menu_no_location;
+                popupMenu.getMenuInflater().inflate(menuID, popupMenu.getMenu());
                 popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem menuItem) {
