@@ -10,10 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -131,7 +128,18 @@ public class ListFragment extends Fragment {
                         String menuTitle = String.valueOf(menuItem.getTitle());
                         String sortKey = sortKeys.get(menuTitle);
                         currentSortKey = sortKey;
-                        refreshStationsList(sortKey);
+                        if(emptySlotsChecked && !freeBikesChecked) {
+                            refresh(sortKey, Constants.getEmptySlots(), null);
+                        }
+                        else if(!emptySlotsChecked && freeBikesChecked) {
+                            refresh(sortKey, Constants.getFreeBikes(), null);
+                        }
+                        else if(emptySlotsChecked && freeBikesChecked) {
+                            refresh(sortKey, Constants.getEmptySlots(), Constants.getFreeBikes());
+                        }
+                        else {
+                            refreshStationsList(sortKey);
+                        }
                         return true;
                     }
                 });
@@ -177,45 +185,42 @@ public class ListFragment extends Fragment {
             }
         }
         array = filterArray;
-        stationsLinearLayout.removeAllViews();
-        populateList();
+        totalNumberOfStations = array.length();
+        requireActivity().runOnUiThread(() -> {
+            stationsLinearLayout.removeAllViews();
+        });
     }
 
     public void filterItems(MenuItem item) {
         int itemID = item.getItemId();
-        Log.d("item ID", "ID: " + itemID + " " + R.id.filter_free_bikes + " " + R.id.filter_empty_slots );
         switch (itemID) {
             case R.id.filter_free_bikes:
                 if(item.isChecked()) {
                     item.setChecked(false);
                     freeBikesChecked = false;
-                    Log.d("freebikeschecked", "ischecked: " + freeBikesChecked);
-                    refreshFilter(currentSortKey);
-                    if(emptySlotsChecked) filterOnKey("empty_slots");
+                    if(emptySlotsChecked) refresh(currentSortKey, Constants.getEmptySlots(), null);
+                    else refresh(currentSortKey, null, null);
 
                 }
                 else {
                     item.setChecked(true);
                     freeBikesChecked = true;
                     filterOnKey("free_bikes");
-                    Log.d("freebikeschecked", "else: " + freeBikesChecked);
+                    populateList();
                 }
                 break;
             case R.id.filter_empty_slots:
                 if(item.isChecked()) {
                     item.setChecked(false);
                     emptySlotsChecked = false;
-                    Log.d("emptyslotschecked", "ischecked: " + emptySlotsChecked);
-                    refreshFilter(currentSortKey);
-                    if(freeBikesChecked) filterOnKey("free_bikes");
-
-
+                    if(freeBikesChecked) refresh(currentSortKey, Constants.getFreeBikes(), null);
+                    else refresh(currentSortKey, null, null);
                 }
                 else {
                     item.setChecked(true);
                     emptySlotsChecked = true;
                     filterOnKey("empty_slots");
-                    Log.d("emptyslotschecked", "else: " + emptySlotsChecked);
+                    populateList();
                 }
                 break;
         }
@@ -290,21 +295,18 @@ public class ListFragment extends Fragment {
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
     }
 
-    public void refreshFilter(String sortKey) {
+    public void refresh(String sortKey, String filterKey1, String filterKey2) {
+        numberOfLoadedStations = 0;
         updateUserPosition();
         stationsLinearLayout.removeAllViews();
         progressBar.setVisibility(View.VISIBLE);
-        getData(sortKey);
+        getData(sortKey, filterKey1, filterKey2);
     }
 
     public void refreshStationsList(String sortKey) {
         emptySlotsChecked = false;
         freeBikesChecked = false;
-        numberOfLoadedStations = 0;
-        updateUserPosition();
-        stationsLinearLayout.removeAllViews();
-        progressBar.setVisibility(View.VISIBLE);
-        getData(sortKey);
+        refresh(sortKey, null, null);
     }
 
     public void styleText(TextView view, String text, int fontSize, Typeface font, int color) {
@@ -384,7 +386,6 @@ public class ListFragment extends Fragment {
             }
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("test1", "createBoxWithData: ");
         }
         emptySlots.setLayoutParams(lp);
         freeBikes.setLayoutParams(lp2);
@@ -433,7 +434,6 @@ public class ListFragment extends Fragment {
         JSONObject station;
         String rawName;
         String sortableName;
-        Log.d("test2", "sortByField: ");
         // Adding distance and sortable name to all station objects
         for(int i = 0; i < array.length(); i++) {
             try {
@@ -449,7 +449,6 @@ public class ListFragment extends Fragment {
                 array.getJSONObject(i).put(Constants.getSortableName(), sortableName);
             } catch (JSONException e) {
                 e.printStackTrace();
-                Log.d("test", "sortByField: ");
             }
         }
     }
@@ -463,8 +462,12 @@ public class ListFragment extends Fragment {
         return;
     }
 
-    // Inspired by this source: https://www.youtube.com/watch?v=oGWJ8xD2W6k
     public void getData(String sortKey) {
+        getData(sortKey, null, null);
+    }
+
+    // Inspired by this source: https://www.youtube.com/watch?v=oGWJ8xD2W6k
+    public void getData(String sortKey, String filterKey1, String filterKey2) {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -490,6 +493,8 @@ public class ListFragment extends Fragment {
                         filterFavorites();
                         addFieldsToStations();
                         sortStationsByField(sortKey);
+                        if(filterKey1 != null) filterOnKey(filterKey1);
+                        if(filterKey2 != null) filterOnKey(filterKey2);
                         refreshContainer.setRefreshing(false);
                         populateList();
                     } catch (JSONException e) {
