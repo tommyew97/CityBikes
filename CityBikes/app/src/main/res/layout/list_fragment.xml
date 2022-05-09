@@ -42,25 +42,38 @@
 
     <LinearLayout
         android:id="@+id/sort_and_filter_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="120dp"
+        android:layout_height="60dp"
         android:layout_marginBottom="75dp"
         android:orientation="horizontal"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
+        app:layout_constraintRight_toRightOf="parent"
+        android:background="@drawable/rounded_rectangle"
+        android:gravity="center">
 
-        <Button
+        <ImageButton
             android:id="@+id/sortButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sort" />
+            android:src="@drawable/sort"
+            android:background="@color/transparent"
+            android:layout_marginRight="4dp"
+            />
+        <View
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:background="@color/black" />
 
-        <Button
+        <ImageButton
             android:id="@+id/filterButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Filter" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/filter"
+            android:background="@color/transparent"
+            android:layout_marginLeft="4dp"
+            />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
