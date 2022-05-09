@@ -38,7 +38,6 @@ import okhttp3.Response;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.ViewTreeObserver;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -76,8 +75,8 @@ public class ListFragment extends Fragment {
     protected boolean locationAllowed;
     protected SwipeRefreshLayout refreshContainer;
     protected String currentSortKey;
-    protected Button sortButton;
-    protected Button filterButton;
+    protected ImageButton sortButton;
+    protected ImageButton filterButton;
     private LinearLayout sortAndFilterLayout;
     private boolean emptySlotsChecked;
     private boolean freeBikesChecked;
@@ -114,7 +113,7 @@ public class ListFragment extends Fragment {
         sortKeys.put(Constants.getCapDistance(), Constants.getDISTANCE());
         sortKeys.put(Constants.getCapFreeBikes(), Constants.getFreeBikes());
         sortKeys.put(Constants.getCapEmptySlots(), Constants.getEmptySlots());
-        sortButton = (Button) view.findViewById(R.id.sortButton);
+        sortButton = (ImageButton) view.findViewById(R.id.sortButton);
         sortButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -148,7 +147,7 @@ public class ListFragment extends Fragment {
                 popupMenu.show();
             }
         });
-        filterButton = (Button) view.findViewById(R.id.filterButton);
+        filterButton = (ImageButton) view.findViewById(R.id.filterButton);
         filterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -298,6 +297,7 @@ public class ListFragment extends Fragment {
     }
 
     public void refresh(String sortKey, String filterKey1, String filterKey2) {
+        sortAndFilterLayout.setVisibility(View.INVISIBLE);
         numberOfLoadedStations = 0;
         updateUserPosition();
         stationsLinearLayout.removeAllViews();
@@ -423,8 +423,6 @@ public class ListFragment extends Fragment {
                 stationsLinearLayout.addView(createBoxWithData(i));
                 numberOfLoadedStations++;
             }
-            progressBar.setVisibility(View.GONE);
-            sortAndFilterLayout.setVisibility(View.VISIBLE);
         });
     }
 
@@ -435,6 +433,13 @@ public class ListFragment extends Fragment {
 
     public void filterFavorites() {
         return;
+    }
+
+    public void hideAndShowElements() {
+        requireActivity().runOnUiThread(() -> {
+            progressBar.setVisibility(View.GONE);
+            sortAndFilterLayout.setVisibility(View.VISIBLE);
+        });
     }
 
     public void getData(String sortKey) {
@@ -472,6 +477,7 @@ public class ListFragment extends Fragment {
                         if(filterKey2 != null) filterOnKey(filterKey2);
                         refreshContainer.setRefreshing(false);
                         populateList();
+                        hideAndShowElements();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

@@ -71,6 +71,10 @@ public class FavoritesFragment extends ListFragment {
         array = favoriteArray;
     }
 
+    @Override
+    public void hideAndShowElements() {
+        progressBar.setVisibility(View.INVISIBLE);
+    }
 
     public void styleEmptyFavoritesPage() {
         TextView favorites = new TextView(getActivity());
