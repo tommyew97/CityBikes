@@ -428,31 +428,6 @@ public class ListFragment extends Fragment {
         });
     }
 
-    public void addFieldsToStations() {
-        double distance;
-        Double stationLat;
-        Double stationLong;
-        JSONObject station;
-        String rawName;
-        String sortableName;
-        // Adding distance and sortable name to all station objects
-        for(int i = 0; i < array.length(); i++) {
-            try {
-                station = array.getJSONObject(i);
-                if(locationAllowed) {
-                    stationLat = Double.parseDouble(station.getString(Constants.getLATITUDE()));
-                    stationLong = Double.parseDouble(station.getString(Constants.getLONGITUDE()));
-                    distance = CalculateDistance.distance(userLat, userLong, stationLat, stationLong);
-                    array.getJSONObject(i).put(Constants.getDISTANCE(), distance);
-                }
-                rawName = station.getString(Constants.getNAME());
-                sortableName = rawName.split(" ", 3)[2];
-                array.getJSONObject(i).put(Constants.getSortableName(), sortableName);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     public void sortStationsByField(String sortKey) {
         array = SortStations.sortStationsByField(array, sortKey);
@@ -491,7 +466,8 @@ public class ListFragment extends Fragment {
                         array = (JSONArray)network.get(Constants.getSTATIONS());
                         totalNumberOfStations = array.length();
                         filterFavorites();
-                        addFieldsToStations();
+                        //addFieldsToStations();
+                        array = CalculateDistance.addFieldsToStations(array, locationAllowed, userLat, userLong);
                         sortStationsByField(sortKey);
                         if(filterKey1 != null) filterOnKey(filterKey1);
                         if(filterKey2 != null) filterOnKey(filterKey2);
