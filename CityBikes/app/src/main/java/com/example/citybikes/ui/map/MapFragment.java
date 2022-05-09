@@ -1,5 +1,6 @@
 package com.example.citybikes.ui.map;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,19 +10,28 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.citybikes.MainActivity;
 import com.example.citybikes.R;
 import com.example.citybikes.util.CalculateDistance;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.ClusterManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import okhttp3.Call;
@@ -35,7 +45,7 @@ import okhttp3.Response;
  * CLass that creates a fragment for the 'Map' section. It handles the
  * visualization and renders necessary elements
  */
-public class MapFragment extends Fragment implements  OnMapReadyCallback  {
+public class MapFragment extends Fragment implements  OnMapReadyCallback {
 
     private MapViewModel mViewModel;
     protected boolean locationAllowed;
@@ -43,8 +53,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback  {
     protected static final String citybikesURL = "http://api.citybik.es/v2/networks/bicimad";
     protected JSONObject mainObject;
     protected JSONObject network;
-    GoogleMap googleMap2;
-    MarkerOptions [] markers;
+    private MarkerOptions [] markers;
+    private List<Marker> markersList = new ArrayList<>();
 
 
 
@@ -57,7 +67,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback  {
         mapFragment.getMapAsync(this);
 
 //        ------------------------------------
-
         return view;
     }
 
@@ -73,8 +82,40 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback  {
         //enables the option to show current location on the Map
         googleMap.setMyLocationEnabled(true);
 
-        //API call rquest, along with generating the markers on map
+        //Show zoom buttons
+        UiSettings mapSettings = googleMap.getUiSettings();
+        mapSettings.setZoomControlsEnabled(true);
+
+        //API call request, along with generating the markers on map
         getData(googleMap);
+
+
+        //Code that shows or hides icon based on zoom level
+        googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+            @Override
+            public void onCameraMove() {
+                CameraPosition cameraPosition = googleMap.getCameraPosition();
+                for(Marker m:markersList){
+
+                    m.setVisible(cameraPosition.zoom>14.0);
+                }
+            }
+        });
+
+        //Madrid - Sol
+        LatLng initialPosition = new LatLng(40.4170, -3.7035);
+        if (locationAllowed) {
+            initialPosition = new LatLng(((MainActivity) getActivity()).getUserLong(),
+                    ((MainActivity) getActivity()).getUserLat());
+        }
+
+        CameraPosition newPos =
+                new CameraPosition.Builder()
+                        .target(initialPosition)
+                        .build();
+
+        //Zoom camera to current location or Madrid
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(newPos));
 
     }
 
@@ -93,10 +134,21 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback  {
         MarkerOptions station = new MarkerOptions()
                 .position(new LatLng(lat, lon))
                 .title(stationName)
-                .snippet(emptySlots + " " + "| " + freeBikes + " " + distance);
+                .snippet(emptySlots + " " + "| " + freeBikes + " ." + distance );
 
         return station;
 
+    }
+
+    /**
+     * Adds a single marker to a google map item
+     * @param mark
+     * @param googleMap
+     */
+    private void addMarker(MarkerOptions mark, GoogleMap googleMap){
+        Marker marker = googleMap.addMarker(mark);
+        markersList.add(marker);
+        marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.incon_4));
     }
 
     /**
@@ -107,7 +159,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback  {
     public void addMark(GoogleMap googleMap, MarkerOptions[] stations){
         requireActivity().runOnUiThread(() -> {
             for(MarkerOptions station : stations){
-                googleMap.addMarker(station);
+                addMarker(station, googleMap);
             }
         });
     }
@@ -128,6 +180,9 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback  {
         String stationDistance = "";
         String distance = "";
         markers = new MarkerOptions[array.length()];
+
+
+
         if (array != null) {
             for (int index = 0; index < array.length(); index++) {
 
@@ -135,7 +190,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback  {
                     name = array.getJSONObject(index).getString("name");
                     freeBikes = "Free bikes: " + array.getJSONObject(index).getString("free_bikes");
                     emptySlots = "Empty slots: " + array.getJSONObject(index).getString("empty_slots");
-                    stationLat = Double.parseDouble(array.getJSONObject(index).getString("latitude"));           //Double.parseDouble(station.getString("latitude"));
+                    stationLat = Double.parseDouble(array.getJSONObject(index).getString("latitude"));
                     stationLong = Double.parseDouble(array.getJSONObject(index).getString("longitude"));
                     stationDistance = CalculateDistance.numberToString(Double.parseDouble(array.getJSONObject(index).getString("distance")));
                 } catch (JSONException e) {
@@ -179,7 +234,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback  {
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray) network.get("stations");
 
-                        MarkerOptions[] stationMarkers = addStationsMarkers(googleMap2, array);
+                        MarkerOptions[] stationMarkers = addStationsMarkers(googleMap, array);
                         addMark(googleMap, stationMarkers);
 
                     } catch (JSONException e) {
@@ -188,7 +243,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback  {
                 }
             }
         });
-
     }
 
 }
