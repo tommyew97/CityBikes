@@ -85,6 +85,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     public void onMapReady(@NonNull GoogleMap googleMap) {
         //enables the option to show current location on the Map
         googleMap.setMyLocationEnabled(true);
+
+        //Gets user Lat and Long if location is allowed
         if(locationAllowed) {
             userLong = ((MainActivity) getActivity()).getUserLong();
             userLat = ((MainActivity) getActivity()).getUserLat();
@@ -117,13 +119,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                     ((MainActivity) getActivity()).getUserLong());
         }
 
-        CameraPosition newPos =
-                new CameraPosition.Builder()
-                        .target(initialPosition)
-                        .build();
-
-        //Zoom camera to current location or Madrid
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(initialPosition, 15));
+        //Zoom camera to current location or Madrid when map is open/initialized
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(initialPosition, 17));
 
     }
 
@@ -142,7 +139,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         MarkerOptions station = new MarkerOptions()
                 .position(new LatLng(lat, lon))
                 .title(stationName)
-                .snippet(emptySlots + " " + "| " + freeBikes + " | " + distance );
+                .snippet(emptySlots + " " + " | " + freeBikes + " | " + distance );
 
         return station;
 
@@ -160,7 +157,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     }
 
     /**
-     * Function that adds a marker to the Map
+     * Function that adds markers from a Array<Marker> to a google map item
      * @param googleMap
      * @param stations Array with MarkerOptions Objects (stations ready to be added to the map)
      */
@@ -188,8 +185,6 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         String stationDistance = "";
         String distance = "";
         markers = new MarkerOptions[array.length()];
-
-
 
         if (array != null) {
             for (int index = 0; index < array.length(); index++) {
