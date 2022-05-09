@@ -1,5 +1,9 @@
 package com.example.citybikes.util;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class CalculateDistance {
 
     //Inspired from https://www.geodatasource.com/developers/java
@@ -47,6 +51,33 @@ public class CalculateDistance {
             result = roundedDist + " m";
         }
         return result;
+    }
+
+    public static JSONArray addFieldsToStations(JSONArray array, boolean locationAllowed, Double userLat, Double userLong) {
+        double distance;
+        Double stationLat;
+        Double stationLong;
+        JSONObject station;
+        String rawName;
+        String sortableName;
+        // Adding distance and sortable name to all station objects
+        for(int i = 0; i < array.length(); i++) {
+            try {
+                station = array.getJSONObject(i);
+                if(locationAllowed) {
+                    stationLat = Double.parseDouble(station.getString(Constants.getLATITUDE()));
+                    stationLong = Double.parseDouble(station.getString(Constants.getLONGITUDE()));
+                    distance = CalculateDistance.distance(userLat, userLong, stationLat, stationLong);
+                    array.getJSONObject(i).put(Constants.getDISTANCE(), distance);
+                }
+                rawName = station.getString(Constants.getNAME());
+                sortableName = rawName.split(" ", 3)[2];
+                array.getJSONObject(i).put(Constants.getSortableName(), sortableName);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return array;
     }
 
 }

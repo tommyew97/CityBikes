@@ -23,7 +23,6 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.clustering.ClusterManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,6 +39,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import com.example.citybikes.util.CalculateDistance;
+
 
 /**
  * CLass that creates a fragment for the 'Map' section. It handles the
@@ -55,6 +56,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     protected JSONObject network;
     private MarkerOptions [] markers;
     private List<Marker> markersList = new ArrayList<>();
+    private Double userLat;
+    private Double userLong;
 
 
 
@@ -65,6 +68,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
 
         mapFragment.getMapAsync(this);
+        locationAllowed = ((MainActivity) getActivity()).getLocationAllowed();
 
 //        ------------------------------------
         return view;
@@ -81,6 +85,10 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
     public void onMapReady(@NonNull GoogleMap googleMap) {
         //enables the option to show current location on the Map
         googleMap.setMyLocationEnabled(true);
+        if(locationAllowed) {
+            userLong = ((MainActivity) getActivity()).getUserLong();
+            userLat = ((MainActivity) getActivity()).getUserLat();
+        }
 
         //Show zoom buttons
         UiSettings mapSettings = googleMap.getUiSettings();
@@ -105,8 +113,8 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         //Madrid - Sol
         LatLng initialPosition = new LatLng(40.4170, -3.7035);
         if (locationAllowed) {
-            initialPosition = new LatLng(((MainActivity) getActivity()).getUserLong(),
-                    ((MainActivity) getActivity()).getUserLat());
+            initialPosition = new LatLng(((MainActivity) getActivity()).getUserLat(),
+                    ((MainActivity) getActivity()).getUserLong());
         }
 
         CameraPosition newPos =
@@ -115,7 +123,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                         .build();
 
         //Zoom camera to current location or Madrid
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(newPos));
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(initialPosition, 15));
 
     }
 
@@ -134,7 +142,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
         MarkerOptions station = new MarkerOptions()
                 .position(new LatLng(lat, lon))
                 .title(stationName)
-                .snippet(emptySlots + " " + "| " + freeBikes + " ." + distance );
+                .snippet(emptySlots + " " + "| " + freeBikes + " | " + distance );
 
         return station;
 
@@ -233,7 +241,7 @@ public class MapFragment extends Fragment implements  OnMapReadyCallback {
                         mainObject = new JSONObject(reply);
                         network = mainObject.getJSONObject("network");
                         array = (JSONArray) network.get("stations");
-
+                        array = CalculateDistance.addFieldsToStations(array, locationAllowed, userLat, userLong);
                         MarkerOptions[] stationMarkers = addStationsMarkers(googleMap, array);
                         addMark(googleMap, stationMarkers);
 
