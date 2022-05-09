@@ -466,7 +466,6 @@ public class ListFragment extends Fragment {
                         array = (JSONArray)network.get(Constants.getSTATIONS());
                         totalNumberOfStations = array.length();
                         filterFavorites();
-                        //addFieldsToStations();
                         array = CalculateDistance.addFieldsToStations(array, locationAllowed, userLat, userLong);
                         sortStationsByField(sortKey);
                         if(filterKey1 != null) filterOnKey(filterKey1);
