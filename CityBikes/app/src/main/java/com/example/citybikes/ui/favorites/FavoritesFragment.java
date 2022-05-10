@@ -74,7 +74,7 @@ public class FavoritesFragment extends ListFragment {
 
     public void styleEmptyFavoritesPage() {
         TextView favorites = new TextView(getActivity());
-        styleText(favorites, "No favorites to show", 40, robotoBold, Color.parseColor("#CC383838"));
+        styleText(favorites, "No favorites to show", 40, montserratBold, Color.parseColor("#CC383838"));
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
         favorites.setLayoutParams(params);
         favorites.setGravity(Gravity.CENTER);

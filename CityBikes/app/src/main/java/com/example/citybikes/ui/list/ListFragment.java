@@ -66,7 +66,6 @@ public class ListFragment extends Fragment {
     private RelativeLayout.LayoutParams lp;
     private RelativeLayout.LayoutParams lp2;
     private RelativeLayout.LayoutParams lp3;
-    protected Typeface robotoBold;
     private Typeface robotoNormal;
     protected AppDatabase db;
     private RelativeLayout.LayoutParams lp4;
@@ -85,7 +84,7 @@ public class ListFragment extends Fragment {
     private int numberOfLoadedStations;
     private int totalNumberOfStations;
     private static final int STATION_BULK_LOAD_SIZE = 50;
-    private Typeface montserratBold;
+    protected Typeface montserratBold;
     private Typeface montserratMedium;
 
     public static ListFragment newInstance() {
@@ -98,8 +97,6 @@ public class ListFragment extends Fragment {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
         emptySlotsChecked = false;
         freeBikesChecked = false;
-        montserratBold = ResourcesCompat.getFont(getContext(), R.font.montserrat_bold);
-        montserratMedium = ResourcesCompat.getFont(getContext(), R.font.montserrat_medium);
         ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
         detectScrolledToBottom(scrollView);
         stationsLinearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
@@ -248,8 +245,9 @@ public class ListFragment extends Fragment {
 
     // One time setup of UI elements such as layout parameters and fonts
     public void setUp() {
-        robotoBold = Typeface.create("sans-serif", Typeface.BOLD);
         robotoNormal = Typeface.create("sans-serif", Typeface.NORMAL);
+        montserratBold = ResourcesCompat.getFont(getContext(), R.font.montserrat_bold);
+        montserratMedium = ResourcesCompat.getFont(getContext(), R.font.montserrat_medium);
         layoutParameterSetUp();
         locationAllowed = ((MainActivity) getActivity()).getLocationAllowed();
         if(locationAllowed) currentSortKey = Constants.getDISTANCE();
@@ -300,7 +298,6 @@ public class ListFragment extends Fragment {
         lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-
     }
 
     public void refresh(String sortKey, String filterKey1, String filterKey2) {
