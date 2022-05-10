@@ -63,7 +63,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar = findViewById(R.id.toolbar);
 
         getSupportFragmentManager().beginTransaction().add(R.id.content, new ListFragment()).commit();
-        setTitle("List");
+        setTitle("Stations");
+
 
         //Setup toolbar
         setSupportActionBar(toolbar);

@@ -5,11 +5,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.map.MapFragment">
 
-    <TextView
-        android:id="@+id/location_text"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Map View" />
 
         <fragment
         android:id="@+id/map"
