@@ -1,6 +1,7 @@
 package com.example.citybikes.ui.list;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
@@ -84,6 +85,8 @@ public class ListFragment extends Fragment {
     private int numberOfLoadedStations;
     private int totalNumberOfStations;
     private static final int STATION_BULK_LOAD_SIZE = 50;
+    private Typeface montserratBold;
+    private Typeface montserratMedium;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -95,6 +98,8 @@ public class ListFragment extends Fragment {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
         emptySlotsChecked = false;
         freeBikesChecked = false;
+        montserratBold = ResourcesCompat.getFont(getContext(), R.font.montserrat_bold);
+        montserratMedium = ResourcesCompat.getFont(getContext(), R.font.montserrat_medium);
         ScrollView scrollView = (ScrollView) view.findViewById(R.id.scrollView);
         detectScrolledToBottom(scrollView);
         stationsLinearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
@@ -295,6 +300,7 @@ public class ListFragment extends Fragment {
         lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         lp2.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+
     }
 
     public void refresh(String sortKey, String filterKey1, String filterKey2) {
@@ -372,13 +378,14 @@ public class ListFragment extends Fragment {
         String stationDistance = "";
         try {
             styleText(name, array.getJSONObject(index).getString(Constants.getSortableName()), 18,
-                    robotoBold, Color.BLACK);
+                    montserratBold, Color.BLACK);
             styleText(freeBikes, "Free bikes: " +
                     array.getJSONObject(index).getString(Constants.getFreeBikes()), 16,
-                    robotoNormal, Color.BLACK);
+                    montserratMedium, Color.BLACK);
+
             styleText(emptySlots, "Empty slots: " +
                     array.getJSONObject(index).getString(Constants.getEmptySlots()), 16,
-                    robotoNormal, Color.BLACK);
+                    montserratMedium, Color.BLACK);
             JSONObject extra = array.getJSONObject(index).getJSONObject(Constants.getEXTRA());
             configureFavoritesButton(favoritesButton,array.getJSONObject(index).
                     getString(Constants.getNAME()), extra.getString(Constants.getUID()));
@@ -400,7 +407,9 @@ public class ListFragment extends Fragment {
             styleText(distance, stationDistance, 16, robotoNormal, Color.BLACK);
             distance.setLayoutParams(lp4);
             box.addView(distance);
+            lp2.addRule(RelativeLayout.RIGHT_OF, distance.getId());
         }
+        freeBikes.setPadding(170,0,0,0);
         return box;
     }
 

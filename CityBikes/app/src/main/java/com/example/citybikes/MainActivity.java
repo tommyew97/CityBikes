@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -12,6 +13,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private double userLat;
     private double userLong;
     private boolean locationAllowed = false;
+    private Typeface montserratMedium;
 
     /**
      * creates the activity and loads al the content
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        montserratMedium = ResourcesCompat.getFont(getBaseContext(), R.font.montserrat_medium);
 
         //UI
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -63,7 +67,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar = findViewById(R.id.toolbar);
 
         getSupportFragmentManager().beginTransaction().add(R.id.content, new ListFragment()).commit();
-        setTitle("List");
+        setTitle("Stations");
+
 
         //Setup toolbar
         setSupportActionBar(toolbar);
